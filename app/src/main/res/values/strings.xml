@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">MvpMusicPlayer</string>
+    <string name="title_main">音乐</string>
+    <string name="action_search">搜索</string>
+    <string name="action_exit">退出</string>
+    <string name="search_hint">搜索音乐、艺术家…</string>
+
+    <string name="mode_play_loop">列表循环</string>
+    <string name="mode_play_one">单曲循环</string>
+    <string name="mode_play_random">随机播放</string>
+
+    <string name="music_image_transitionName">MusicImage</string>
+</resources>
