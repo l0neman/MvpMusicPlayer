@@ -1,13 +1,15 @@
 package com.runing.example.mvpmusicplayer.apdater;
 
 import android.content.Context;
+import android.support.v7.widget.RecyclerView;
+import android.util.SparseArray;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.runing.example.mvpmusicplayer.R;
-import com.runing.example.mvpmusicplayer.base.BaseMyAdapter;
+import com.runing.example.mvpmusicplayer.base.BaseRVAdapter;
 import com.runing.example.mvpmusicplayer.data.bean.Music;
 import com.runing.example.mvpmusicplayer.util.TimeUtils;
 
@@ -30,23 +32,55 @@ import java.util.List;
  * You should have received a copy of the GNU General Public License
  * along with MvpMusicPlayer.  If not, see <http://www.gnu.org/licenses/>.
  */
-public final class MusicAdapter extends BaseMyAdapter<MusicAdapter.ViewHolder> {
+public final class MusicAdapter extends BaseRVAdapter<MusicAdapter.ViewHolder> {
 
     private Context mContext;
 
     private boolean[] mPlaying;
 
+    private float mItemMargin;
+
     public MusicAdapter(Context mContext, List<?> mData) {
         super(mData);
         this.mContext = mContext;
-        mPlaying = new boolean[getCount()];
+        mItemMargin = mContext.getResources().getDimension(R.dimen.margin_normal);
+
+        mPlaying = new boolean[getItemCount()];
         resetPlayState();
     }
 
     @Override
-    protected MusicAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int position) {
+    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View itemView = View.inflate(mContext, R.layout.item_music_list, null);
+        ViewGroup.MarginLayoutParams params = new ViewGroup.MarginLayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        itemView.setLayoutParams(params);
+        params.topMargin = (int) mItemMargin;
+        params.leftMargin = (int) (mItemMargin / 2);
+        params.rightMargin = (int) (mItemMargin / 2);
+
         return new ViewHolder(itemView);
+    }
+
+    @Override
+    public void onBindViewHolder(MusicAdapter.ViewHolder holder, int position) {
+        super.onBindViewHolder(holder, position);
+        Music data = (Music) getItemData(position);
+
+        holder.name.setText(data.getTitle());
+        holder.singer.setText(data.getArtist());
+        holder.time.setText(TimeUtils.millis2MSStr(data.getDuration()));
+
+        if (mPlaying[position]) {
+            holder.more.setImageResource(R.drawable.src_playlist_playing);
+        } else {
+            holder.more.setImageResource(R.drawable.item_more_dark);
+//            holder.more.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+//                }
+//            });
+        }
     }
 
     private void resetPlayState() {
@@ -61,25 +95,7 @@ public final class MusicAdapter extends BaseMyAdapter<MusicAdapter.ViewHolder> {
         notifyDataSetChanged();
     }
 
-    @Override
-    protected void onBindViewHolder(MusicAdapter.ViewHolder holder, final int position) {
-        Music data = (Music) getItem(position);
-        holder.name.setText(data.getTitle());
-        holder.singer.setText(data.getArtist());
-        holder.time.setText(TimeUtils.millis2MSStr(data.getDuration()));
-        if (mPlaying[position]) {
-            holder.more.setImageResource(R.drawable.src_playlist_playing);
-        } else {
-            holder.more.setImageResource(R.drawable.item_more_dark);
-            holder.more.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                }
-            });
-        }
-    }
-
-    protected static final class ViewHolder extends BaseMyAdapter.ViewHolder {
+    protected static final class ViewHolder extends RecyclerView.ViewHolder {
 
         private TextView name;
         private TextView singer;

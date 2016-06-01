@@ -1,9 +1,13 @@
 package com.runing.example.mvpmusicplayer.ui;
 
 import android.content.Intent;
+import android.graphics.Canvas;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -16,7 +20,9 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.runing.example.mvpmusicplayer.R;
+import com.runing.example.mvpmusicplayer.apdater.MusicAdapter;
 import com.runing.example.mvpmusicplayer.base.BaseActivity;
+import com.runing.example.mvpmusicplayer.base.BaseRVAdapter;
 import com.runing.example.mvpmusicplayer.contract.MainContract;
 import com.runing.example.mvpmusicplayer.data.bean.Music;
 import com.runing.example.mvpmusicplayer.data.bean.MusicState;
@@ -24,20 +30,22 @@ import com.runing.example.mvpmusicplayer.presenter.MainPresenter;
 import com.runing.example.mvpmusicplayer.service.MusicService;
 import com.runing.example.mvpmusicplayer.util.BitmapUtils;
 
+import java.util.List;
+
 /**
  * Created by runing on 2016/5/13.
- * <p>
+ * <p/>
  * This file is part of MvpMusicPlayer.
  * MvpMusicPlayer is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * <p>
+ * <p/>
  * MvpMusicPlayer is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * <p>
+ * <p/>
  * You should have received a copy of the GNU General Public License
  * along with MvpMusicPlayer.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -49,7 +57,9 @@ public class MainActivity extends BaseActivity implements MainContract.View,
     /**
      * 音乐列表
      */
-    private ListView mMusicList;
+    private RecyclerView mMusicList;
+
+    private MusicAdapter mMusicAdapter;
     /**
      * 可以响应
      */
@@ -148,18 +158,38 @@ public class MainActivity extends BaseActivity implements MainContract.View,
     }
 
     @Override
-    public void showMusicList(final BaseAdapter adapter) {
-        mMusicList.setAdapter(adapter);
-        mMusicList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+    public void showMusicList(List<Music> musicList) {
+        mMusicAdapter = new MusicAdapter(this, musicList);
+        mMusicList.setLayoutManager(new LinearLayoutManager(this));
+        mMusicList.setItemAnimator(new DefaultItemAnimator());
+        mMusicList.setAdapter(mMusicAdapter);
+        mMusicAdapter.setOnItemOnClickListener(new BaseRVAdapter.OnItemOnClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            public void onItemClick(View itemView, int position) {
                 mPresenter.playSpecified(position);
             }
         });
+//        mMusicList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//            @Override
+//            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+//                mPresenter.playSpecified(position);
+//            }
+//        });
+    }
+
+    /**
+     * 设置选择项
+     */
+    private void selectListItem(int position) {
+        if (position != MusicService.INDEX_DEFAULT) {
+            mMusicAdapter.select(position);
+        }
     }
 
     @Override
     public void restoreMusic(MusicState state) {
+
+        selectListItem(state.getPosition());
         restoreMusicView(state);
         mPresenter.setOnProgressListener(new MusicService.OnProgressListener() {
             @Override
@@ -178,11 +208,13 @@ public class MainActivity extends BaseActivity implements MainContract.View,
     private void restoreMusicView(MusicState state) {
         mMusicBar.setMax(state.getTotal());
         mMusicBar.setProgress(state.getProgress());
-        updateMusic(state.getState(), state.getMusic());
+        updateMusic(state.getState(), state.getMusic(), state.getPosition());
     }
 
     @Override
-    public void updateMusic(@NonNull MusicService.PlayState state, @Nullable Music music) {
+    public void updateMusic(@NonNull MusicService.PlayState state,
+                            @Nullable Music music, int position) {
+        selectListItem(position);
         updateMusicView(music);
         switch (state) {
             case PLAY:

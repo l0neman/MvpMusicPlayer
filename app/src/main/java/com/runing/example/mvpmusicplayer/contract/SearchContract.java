@@ -6,6 +6,9 @@ import android.widget.BaseAdapter;
 
 import com.runing.example.mvpmusicplayer.base.BasePresenter;
 import com.runing.example.mvpmusicplayer.base.BaseView;
+import com.runing.example.mvpmusicplayer.data.bean.Music;
+
+import java.util.List;
 
 /**
  * Created by runing on 2016/5/14.
@@ -31,10 +34,14 @@ public interface SearchContract {
         /**
          * 显示搜索音乐列表
          *
-         * @param adapter
+         * @param musicList 音乐数据
          */
-        void showSearchList(BaseAdapter adapter);
+        void showSearchList(List<Music> musicList);
 
+        /**
+         * 刷新列表
+         */
+        void refreshList();
     }
 
     interface Presenter extends BasePresenter {

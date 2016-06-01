@@ -101,6 +101,10 @@ public final class MusicService extends Service {
      */
     private int mCurrentProgress;
     /**
+     * 当前音乐状态
+     */
+    private final MusicState mMusicState = new MusicState();
+    /**
      * 进度回调
      */
     private OnProgressListener mOnProgressListener;
@@ -294,9 +298,9 @@ public final class MusicService extends Service {
      */
     public void setMusicAWPresenter(@Nullable MusicAWPresenter mMusicAWPresenter) {
         this.mMusicAWPresenter = mMusicAWPresenter;
-        if (mMusicAWPresenter != null) {
-
-        }
+//        if (mMusicAWPresenter != null) {
+//
+//        }
 //        if (mMusics != null && mMusicAWPresenter != null) {
 //            mMusicAWPresenter.onInitMusicData(mMusics);
 //        }
@@ -395,7 +399,7 @@ public final class MusicService extends Service {
                 mOnProgressListener.start(mMediaPlayer.getDuration());
             }
             //开启通知
-            if (!mNotifyPresenter.isNotify()) {
+            if (mNotifyPresenter != null && !mNotifyPresenter.isNotify()) {
                 mNotifyPresenter.start();
                 mNotifyPresenter.onChangeCurrMusic(PlayState.PLAY, mIndex);
             }
@@ -537,24 +541,24 @@ public final class MusicService extends Service {
      * @return you know
      */
     public MusicState getCurrentMusicState() {
-        MusicState musicState = new MusicState();
+//        MusicState musicState = new MusicState();
         //当前音乐
-        musicState.setMusic(mCurrMusic);
+        mMusicState.setMusic(mCurrMusic);
         //当前模式
-        musicState.setMode(mCurrentPlayMode);
-        musicState.setPosition(INDEX_DEFAULT);
+        mMusicState.setMode(mCurrentPlayMode);
+        mMusicState.setPosition(INDEX_DEFAULT);
         //正在播放
         if (isActive()) {
-            musicState.setTotal(mMediaPlayer.getDuration());
-            musicState.setPosition(mIndex);
-            musicState.setProgress(mCurrentProgress);
+            mMusicState.setTotal(mMediaPlayer.getDuration());
+            mMusicState.setPosition(mIndex);
+            mMusicState.setProgress(mCurrentProgress);
         }
         if (mMediaPlayer.isPlaying()) {
-            musicState.setState(PlayState.PLAY);
+            mMusicState.setState(PlayState.PLAY);
         } else {
-            musicState.setState(PlayState.PAUSE);
+            mMusicState.setState(PlayState.PAUSE);
         }
-        return musicState;
+        return mMusicState;
     }
 
     @Override

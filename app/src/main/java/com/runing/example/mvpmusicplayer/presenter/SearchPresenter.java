@@ -10,6 +10,7 @@ import com.runing.example.mvpmusicplayer.contract.SearchContract;
 import com.runing.example.mvpmusicplayer.data.bean.Music;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -45,17 +46,14 @@ public class SearchPresenter implements SearchContract.Presenter {
 
     private SearchContract.View mSearchView;
     /**
-     * 适配器
-     */
-    private SearchAdapter mAdapter;
-    /**
      * 需要检索的数据
      */
     private List<Music> mCopyMusics;
     /**
      * 源数据
      */
-    private List<Music> mMusics;
+    @SuppressWarnings("unchecked")
+    private List<Music> mMusics = Collections.EMPTY_LIST;
 
     public SearchPresenter(SearchContract.View mSearchView) {
         this.mSearchView = mSearchView;
@@ -72,7 +70,6 @@ public class SearchPresenter implements SearchContract.Presenter {
     public void handData(Intent data) {
         mMusics = (List<Music>) data.getSerializableExtra(MUSIC_LIST);
         deepCopy(mCopyMusics, mMusics);
-        mAdapter = new SearchAdapter(((Context) mSearchView), mCopyMusics);
     }
 
     @Override
@@ -89,7 +86,7 @@ public class SearchPresenter implements SearchContract.Presenter {
                 }
             }
         }
-        mAdapter.notifyDataSetChanged();
+        mSearchView.refreshList();
     }
 
     @Override
@@ -103,7 +100,7 @@ public class SearchPresenter implements SearchContract.Presenter {
 
     @Override
     public void start() {
-        mSearchView.showSearchList(mAdapter);
+        mSearchView.showSearchList(mCopyMusics);
     }
 
     /**

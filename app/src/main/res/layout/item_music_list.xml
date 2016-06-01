@@ -1,59 +1,70 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/music_item_height"
-    android:orientation="horizontal"
-    android:padding="@dimen/margin_normal">
+    android:layout_height="wrap_content"
+    android:clickable="true"
+    app:cardCornerRadius="@dimen/margin_short"
+    app:cardElevation="@dimen/margin_short">
 
     <LinearLayout
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="7"
-        android:gravity="center|left"
-        android:orientation="vertical">
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/music_item_height"
+        android:background="?android:selectableItemBackground"
+        android:orientation="horizontal"
+        android:padding="@dimen/margin_normal">
 
-        <TextView
-            android:id="@+id/tv_name"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:text="Call Me Maybe"
-            android:textAppearance="?android:textAppearance"
-            android:textColor="@color/black" />
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="7"
+            android:gravity="center|left"
+            android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/tv_singer"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/margin_short"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:text="Carly Rae Jepsen"
-            android:textAppearance="?android:textAppearance"
-            android:textColor="@color/gray_singer" />
+            <TextView
+                android:id="@+id/tv_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="Call Me Maybe"
+                android:textAppearance="?android:textAppearance"
+                android:textColor="@color/black" />
+
+            <TextView
+                android:id="@+id/tv_singer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/margin_short"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="Carly Rae Jepsen"
+                android:textAppearance="?android:textAppearance"
+                android:textColor="@color/gray_singer" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="3"
+            android:gravity="center|right">
+
+            <TextView
+                android:id="@+id/tv_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="3:13"
+                android:textAppearance="?android:textAppearance"
+                android:textColor="@color/gray_singer" />
+
+            <ImageView
+                android:id="@+id/iv_more"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/margin_normal"
+                android:layout_marginRight="@dimen/margin_normal"
+                android:src="@drawable/item_more_dark" />
+        </LinearLayout>
     </LinearLayout>
 
-    <LinearLayout
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="3"
-        android:gravity="center|right">
-
-        <TextView
-            android:id="@+id/tv_time"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="3:13"
-            android:textAppearance="?android:textAppearance"
-            android:textColor="@color/gray_singer" />
-
-        <ImageView
-            android:id="@+id/iv_more"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/margin_normal"
-            android:layout_marginRight="@dimen/margin_normal"
-            android:src="@drawable/item_more_dark" />
-    </LinearLayout>
-</LinearLayout>
+</android.support.v7.widget.CardView>

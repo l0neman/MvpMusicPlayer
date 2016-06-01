@@ -28,11 +28,11 @@ import java.util.List;
  *
  * @param <T>
  */
-public abstract class BaseMyAdapter<T extends BaseMyAdapter.ViewHolder> extends BaseAdapter {
+public abstract class BaseLVAdapter<T extends BaseLVAdapter.ViewHolder> extends BaseAdapter {
 
     private List<?> mData;
 
-    public BaseMyAdapter(List<?> mData) {
+    public BaseLVAdapter(List<?> mData) {
         this.mData = mData;
     }
 

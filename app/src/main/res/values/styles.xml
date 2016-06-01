@@ -1,11 +1,15 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <!--actionMode颜色-->
+        <item name="android:textColorSecondary">@color/dark_white</item>
+        <!--提示文字颜色-->
+        <item name="android:textColorHint">@color/dark_white</item>
     </style>
 
 </resources>

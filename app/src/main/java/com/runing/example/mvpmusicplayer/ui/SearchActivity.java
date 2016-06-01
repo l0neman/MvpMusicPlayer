@@ -1,17 +1,20 @@
 package com.runing.example.mvpmusicplayer.ui;
 
+import android.graphics.Color;
 import android.os.Bundle;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.BaseAdapter;
-import android.widget.ListView;
 
 import com.runing.example.mvpmusicplayer.R;
+import com.runing.example.mvpmusicplayer.apdater.SearchAdapter;
 import com.runing.example.mvpmusicplayer.base.BaseActivity;
+import com.runing.example.mvpmusicplayer.base.BaseRVAdapter;
 import com.runing.example.mvpmusicplayer.contract.SearchContract;
 import com.runing.example.mvpmusicplayer.data.bean.Music;
 import com.runing.example.mvpmusicplayer.presenter.SearchPresenter;
@@ -40,11 +43,9 @@ public class SearchActivity extends BaseActivity implements SearchContract.View
 
     private SearchContract.Presenter mPresenter;
 
-    private SearchView mSearchView;
+    private RecyclerView mSearchList;
 
-    private List<Music> mMusics;
-
-    private ListView mSearchList;
+    private SearchAdapter mSearchAdapter;
 
     @Override
     protected void onBeforeCreateView(Bundle savedInstanceState) {
@@ -63,15 +64,20 @@ public class SearchActivity extends BaseActivity implements SearchContract.View
     @Override
     protected void onAfterCreateView(Bundle savedInstanceState) {
         initToolBar();
+        initRecycleView();
         mPresenter.handData(getIntent());
-
-        mSearchList = findCaseViewById(R.id.lv_search_list);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         mPresenter.start();
+    }
+
+    private void initRecycleView() {
+        mSearchList = findCaseViewById(R.id.lv_search_list);
+        mSearchList.setLayoutManager(new LinearLayoutManager(this));
+        mSearchList.setItemAnimator(new DefaultItemAnimator());
     }
 
     private void initToolBar() {
@@ -96,22 +102,33 @@ public class SearchActivity extends BaseActivity implements SearchContract.View
     }
 
     private void initSearchView(MenuItem item) {
-        mSearchView = (SearchView) item.getActionView();
+        SearchView mSearchView = (SearchView) item.getActionView();
+
+        SearchView.SearchAutoComplete textView =
+                (SearchView.SearchAutoComplete) mSearchView.findViewById(R.id.search_src_text);
+        textView.setTextColor(Color.WHITE);
+
         mSearchView.setIconified(false);
         mSearchView.setQueryHint(getResources().getText(R.string.search_hint));
         mSearchView.setOnQueryTextListener(this);
     }
 
     @Override
-    public void showSearchList(final BaseAdapter adapter) {
-        mSearchList.setAdapter(adapter);
-        mSearchList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+    public void showSearchList(List<Music> musicList) {
+        mSearchAdapter = new SearchAdapter(this, musicList);
+        mSearchList.setAdapter(mSearchAdapter);
+        mSearchAdapter.setOnItemOnClickListener(new BaseRVAdapter.OnItemOnClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Music music = (Music) adapter.getItem(position);
+            public void onItemClick(View itemView, int position) {
+                Music music = (Music) mSearchAdapter.getItemData(position);
                 mPresenter.handListSelect(music.getId());
             }
         });
+    }
+
+    @Override
+    public void refreshList() {
+        mSearchAdapter.notifyDataSetChanged();
     }
 
     @Override

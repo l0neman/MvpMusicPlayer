@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical">
 
     <android.support.v7.widget.Toolbar
@@ -14,7 +14,8 @@
         android:background="@color/colorPrimary"
         app:navigationIcon="@drawable/actionbar_back"
         app:subtitle="god"
-        app:title="Hello World!" />
+        app:title="Hello World!"
+        app:titleTextColor="@color/dark_white" />
 
     <RelativeLayout
         android:id="@+id/rl_bottom_bar"
@@ -115,8 +116,9 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentLeft="true"
                 android:layout_alignParentStart="true"
-                tools:text="01:36"
-                android:textAppearance="?android:attr/textAppearanceSmall" />
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textColor="@color/dark_white"
+                tools:text="01:36" />
 
             <SeekBar
                 android:id="@+id/sb_progress"
@@ -135,15 +137,15 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentRight="true"
-                tools:text="03:56"
-                android:textAppearance="?android:attr/textAppearanceSmall" />
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textColor="@color/dark_white"
+                tools:text="03:56" />
         </RelativeLayout>
 
     </RelativeLayout>
 
     <ImageView
         android:id="@+id/iv_image"
-        android:transitionName="@string/music_image_transitionName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_above="@+id/rl_bottom_bar"
@@ -153,5 +155,6 @@
         android:layout_alignParentStart="true"
         android:layout_below="@+id/tb_detail"
         android:scaleType="centerCrop"
-        android:src="@mipmap/ic_launcher" />
+        android:transitionName="@string/music_image_transitionName"
+        tools:src="@mipmap/ic_launcher" />
 </RelativeLayout>

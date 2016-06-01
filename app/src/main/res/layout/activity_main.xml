@@ -13,15 +13,15 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:background="@color/colorPrimary"
-        app:title="@string/title_main" />
+        app:title="@string/title_main"
+        app:titleTextColor="@color/dark_white" />
 
-    <ListView
+    <android.support.v7.widget.RecyclerView
         android:id="@+id/lv_music_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@+id/rl_bottom_bar"
-        android:layout_below="@+id/tb_main"
-        android:background="@color/white" />
+        android:layout_below="@+id/tb_main" />
 
     <RelativeLayout
         android:id="@+id/rl_bottom_bar"
@@ -60,9 +60,9 @@
                     android:layout_height="wrap_content"
                     android:ellipsize="end"
                     android:maxLines="1"
-                    tools:text="Call Me Maybe"
                     android:textAppearance="?android:textAppearance"
-                    android:textColor="@color/white" />
+                    android:textColor="@color/white"
+                    tools:text="Call Me Maybe" />
 
                 <TextView
                     android:id="@+id/tv_singer"
@@ -71,9 +71,9 @@
                     android:layout_marginTop="@dimen/margin_short"
                     android:ellipsize="end"
                     android:maxLines="1"
-                    tools:text="Carly Rae Jepsen"
                     android:textAppearance="?android:textAppearance"
-                    android:textColor="#bababa" />
+                    android:textColor="#bababa"
+                    tools:text="Carly Rae Jepsen" />
 
             </LinearLayout>
 

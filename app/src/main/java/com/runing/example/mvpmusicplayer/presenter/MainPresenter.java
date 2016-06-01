@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.view.View;
+import android.widget.TextView;
 
 import com.runing.example.mvpmusicplayer.apdater.MusicAdapter;
 import com.runing.example.mvpmusicplayer.contract.MainContract;
@@ -22,18 +23,18 @@ import java.util.List;
 
 /**
  * Created by runing on 2016/5/13.
- * <p>
+ * <p/>
  * This file is part of MvpMusicPlayer.
  * MvpMusicPlayer is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * <p>
+ * <p/>
  * MvpMusicPlayer is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * <p>
+ * <p/>
  * You should have received a copy of the GNU General Public License
  * along with MvpMusicPlayer.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -58,7 +59,7 @@ public final class MainPresenter implements MainContract.Presenter,
     /**
      * 音乐列表适配器
      */
-    private MusicAdapter mMusicAdapter;
+//    private MusicAdapter mMusicAdapter;
     /**
      * 延迟启动搜索
      */
@@ -115,10 +116,11 @@ public final class MainPresenter implements MainContract.Presenter,
     public void playSpecified(int position) {
         int location = mMusicService.playSpecified(position);
         boolean isNoChange = location == MusicService.INDEX_DEFAULT;
-        mMainView.updateMusic(MusicService.PlayState.SWITCH, isNoChange ? null : mMusics.get(location));
-        if (!isNoChange) {
-            mMusicAdapter.select(location);
-        }
+        mMainView.updateMusic(MusicService.PlayState.SWITCH, isNoChange ?
+                null : mMusics.get(location), position);
+//        if (!isNoChange) {
+//            mMusicAdapter.select(location);
+//        }
     }
 
     @Override
@@ -211,26 +213,26 @@ public final class MainPresenter implements MainContract.Presenter,
             enterSearch();
             mEnterSearchDelay = false;
         }
-        if (mMusicAdapter == null) {
-            mMusicAdapter = new MusicAdapter((Context) mMainView, musics);
-            mMainView.showMusicList(mMusicAdapter);
-        }
-        MusicState musicState = mMusicService.getCurrentMusicState();
-        int position = musicState.getPosition();
+//        if (mMusicAdapter == null) {
+//            mMusicAdapter = new MusicAdapter((Context) mMainView, musics);
+        mMainView.showMusicList(musics);
+//        }
+//        MusicState musicState = mMusicService.getCurrentMusicState();
+//        int position = musicState.getPosition();
         //音乐处于活动状态
-        if (position != MusicService.INDEX_DEFAULT) {
-            mMusicAdapter.select(position);
-        }
-        mMainView.restoreMusic(musicState);
+//        if (position != MusicService.INDEX_DEFAULT) {
+//            mMusicAdapter.select(position);
+//        }
+        mMainView.restoreMusic(mMusicService.getCurrentMusicState());
     }
 
     @Override
     public void onChangeCurrMusic(MusicService.PlayState state, int position) {
         boolean isNoChange = position == MusicService.INDEX_DEFAULT;
-        mMainView.updateMusic(state, isNoChange ? null : mMusics.get(position));
-        if (!isNoChange) {
-            mMusicAdapter.select(position);
-        }
+        mMainView.updateMusic(state, isNoChange ? null : mMusics.get(position), position);
+//        if (!isNoChange) {
+//            mMusicAdapter.select(position);
+//        }
     }
 
     @Override

@@ -11,6 +11,8 @@ import com.runing.example.mvpmusicplayer.data.bean.Music;
 import com.runing.example.mvpmusicplayer.data.bean.MusicState;
 import com.runing.example.mvpmusicplayer.service.MusicService;
 
+import java.util.List;
+
 /**
  * Created by runing on 2016/5/13.
  * <p/>
@@ -49,9 +51,9 @@ public interface MainContract {
         /**
          * 显示音乐列表
          *
-         * @param adapter 适配器
+         * @param musicList 音乐数据
          */
-        void showMusicList(BaseAdapter adapter);
+        void showMusicList(List<Music> musicList);
 
         /**
          * 还原状态
@@ -66,7 +68,8 @@ public interface MainContract {
          * @param state 状态
          * @param music 音乐实例
          */
-        void updateMusic(@NonNull MusicService.PlayState state, @Nullable Music music);
+        void updateMusic(@NonNull MusicService.PlayState state,
+                         @Nullable Music music, int position);
 
         /**
          * 允许响应

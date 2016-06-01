@@ -9,6 +9,7 @@
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/tb_search"
+        app:titleTextColor="@color/dark_white"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/colorPrimary"
@@ -16,7 +17,7 @@
         app:navigationContentDescription="@string/action_search"
         app:title="@string/action_search" />
 
-    <ListView
+    <android.support.v7.widget.RecyclerView
         android:id="@+id/lv_search_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
