@@ -29,6 +29,17 @@ import com.runing.example.mvpmusicplayer.service.MusicService;
 public interface MusicAWContract {
 
     interface View extends BaseView<Presenter> {
+
+        String ACTION_PLAY = "music.aw.click.play";
+        String ACTION_PAUSE = "music.aw.click.pause";
+        String ACTION_PRE = "music.aw.click.pre";
+        String ACTION_NEXT = "music.aw.click.next";
+        String ACTION_MODE_LOOP = "music.aw.click.mode.loop";
+        String ACTION_MODE_ONE = "music.aw.click.mode.one";
+        String ACTION_MODE_RANDOM = "music.aw.click.mode.random";
+        String ACTION_SEARCH = "music.aw.click.search";
+        String ACTION_DETAIL = "music.aw.click.detail";
+
         void restoreMusic(MusicState state);
 
         /**
@@ -57,16 +68,6 @@ public interface MusicAWContract {
 
     interface Presenter extends BasePresenter {
 
-        String ACTION_PLAY = "music.aw.click.play";
-        String ACTION_PAUSE = "music.aw.click.pause";
-        String ACTION_PRE = "music.aw.click.pre";
-        String ACTION_NEXT = "music.aw.click.next";
-        String ACTION_MODE_LOOP = "music.aw.click.mode.loop";
-        String ACTION_MODE_ONE = "music.aw.click.mode.one";
-        String ACTION_MODE_RANDOM = "music.aw.click.mode.random";
-        String ACTION_SEARCH = "music.aw.click.search";
-        String ACTION_DETAIL = "music.aw.click.detail";
-
         /**
          * 设置播放模式
          *
@@ -79,8 +80,14 @@ public interface MusicAWContract {
          */
         void playMusic();
 
+        /**
+         * 请求播放
+         */
         void requestPlay();
 
+        /**
+         * 请求还原
+         */
         void requestRestore();
 
         /**

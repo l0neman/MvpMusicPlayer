@@ -60,7 +60,7 @@
                     android:layout_height="wrap_content"
                     android:ellipsize="end"
                     android:maxLines="1"
-                    android:text="Call Me Maybe"
+                    tools:text="Call Me Maybe"
                     android:textAppearance="?android:textAppearance"
                     android:textColor="@color/white" />
 
@@ -71,7 +71,7 @@
                     android:layout_marginTop="@dimen/margin_short"
                     android:ellipsize="end"
                     android:maxLines="1"
-                    android:text="Carly Rae Jepsen"
+                    tools:text="Carly Rae Jepsen"
                     android:textAppearance="?android:textAppearance"
                     android:textColor="#bababa" />
 

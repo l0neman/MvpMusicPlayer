@@ -31,7 +31,7 @@ import java.util.List;
  * You should have received a copy of the GNU General Public License
  * along with MvpMusicPlayer.  If not, see <http://www.gnu.org/licenses/>.
  */
-public class MusicAWPresenter implements MusicAWContract.Presenter, MusicService.UpdateCallBack {
+public class MusicAWPresenter implements MusicAWContract.Presenter, MusicService.MusicCallBack {
 
     /**
      * 音乐列表
@@ -121,6 +121,7 @@ public class MusicAWPresenter implements MusicAWContract.Presenter, MusicService
     @Override
     public void recycleUi() {
         if (mMusicService != null) {
+            mMusicService.removeMusicCallBack(this);
             mMusicService.setMusicAWPresenter(null);
         }
         mAWView.clearView();
@@ -132,8 +133,9 @@ public class MusicAWPresenter implements MusicAWContract.Presenter, MusicService
     }
 
     private void init() {
-        mMusicService.setMusicAWPresenter(null);
+//        mMusicService.setMusicAWPresenter(null);
         mMusicService.setMusicAWPresenter(this);
+        mMusicService.addMusicCallBack(this);
         mAWView.canAction();
     }
 
@@ -183,13 +185,13 @@ public class MusicAWPresenter implements MusicAWContract.Presenter, MusicService
     }
 
     @Override
-    public void onChangeMusic(MusicService.PlayState state, int position) {
-        boolean isNoChange = position == MusicService.INDEX_FAILED;
+    public void onChangeCurrMusic(MusicService.PlayState state, int position) {
+        boolean isNoChange = position == MusicService.INDEX_DEFAULT;
         mAWView.updateMusic(state, isNoChange ? null : mMusics.get(position));
     }
 
     @Override
-    public void onChangeMode(MusicService.PlayMode mode) {
+    public void onChangeMusicMode(MusicService.PlayMode mode) {
         mAWView.updatePlayMode(mode);
     }
 }

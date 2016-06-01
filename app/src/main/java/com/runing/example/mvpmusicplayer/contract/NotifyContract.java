@@ -8,8 +8,6 @@ import com.runing.example.mvpmusicplayer.base.BaseView;
 import com.runing.example.mvpmusicplayer.data.bean.Music;
 import com.runing.example.mvpmusicplayer.service.MusicService;
 
-import java.util.List;
-
 /**
  * Created by runing on 2016/5/17.
  * <p/>
@@ -30,28 +28,6 @@ import java.util.List;
 public interface NotifyContract {
 
     interface View extends BaseView<Presenter> {
-
-        /**
-         * 首次
-         */
-        void firstShow();
-
-        /**
-         * 更新音乐
-         *
-         * @param state 状态
-         * @param music 音乐实例
-         */
-        void updateMusic(@NonNull MusicService.PlayState state, @Nullable Music music);
-
-        /**
-         * 关闭通知
-         */
-        void closeNotify();
-    }
-
-    interface Presenter extends BasePresenter {
-
         /**
          * 播放事件
          */
@@ -77,6 +53,27 @@ public interface NotifyContract {
         String ACTION_CLOSE = "ACTION_CLOSE";
 
         /**
+         * 首次
+         */
+        void firstShow();
+
+        /**
+         * 更新音乐
+         *
+         * @param state 状态
+         * @param music 音乐实例
+         */
+        void updateMusic(@NonNull MusicService.PlayState state, @Nullable Music music);
+
+        /**
+         * 关闭通知
+         */
+        void closeNotify();
+    }
+
+    interface Presenter extends BasePresenter {
+
+        /**
          * 播放
          */
         void playMusic();
@@ -97,9 +94,9 @@ public interface NotifyContract {
         void pauseMusic();
 
         /**
-         * 停止
+         * 关闭
          */
-        void stopMusic();
+        void close();
 
         /**
          * 回收

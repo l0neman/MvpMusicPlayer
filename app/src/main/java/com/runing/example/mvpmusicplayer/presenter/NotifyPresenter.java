@@ -1,10 +1,5 @@
 package com.runing.example.mvpmusicplayer.presenter;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-
 import com.runing.example.mvpmusicplayer.contract.NotifyContract;
 import com.runing.example.mvpmusicplayer.data.bean.Music;
 import com.runing.example.mvpmusicplayer.service.MusicService;
@@ -28,7 +23,7 @@ import java.util.List;
  * You should have received a copy of the GNU General Public License
  * along with MvpMusicPlayer.  If not, see <http://www.gnu.org/licenses/>.
  */
-public class NotifyPresenter implements NotifyContract.Presenter {
+public class NotifyPresenter implements NotifyContract.Presenter, MusicService.MusicCallBack {
 
     private NotifyContract.View mNotifyView;
     /**
@@ -43,77 +38,24 @@ public class NotifyPresenter implements NotifyContract.Presenter {
      * 是否显示通知
      */
     private boolean mIsNotify;
-    /**
-     * 广播接收器
-     */
-    private BroadcastReceiver mNotifyReceiver = new BroadcastReceiver() {
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            switch (action) {
-                //播放
-                case ACTION_PLAY:
-                    playMusic();
-                    break;
-                //暂停
-                case ACTION_PAUSE:
-                    pauseMusic();
-                    break;
-                //上一曲
-                case ACTION_PRE:
-                    preMusic();
-                    break;
-                //下一曲
-                case ACTION_NEXT:
-                    nextMusic();
-                    break;
-                //关闭
-                case ACTION_CLOSE:
-                    mIsNotify = false;
-                    recycleUi();
-                    mMusicService.stopMusic();
-                    break;
-                default:
-                    throw new IllegalArgumentException("action missing!");
-            }
-        }
-    };
 
     private NotifyPresenter(MusicService mMusicService, NotifyContract.View mNotifyView) {
         this.mMusicService = mMusicService;
         this.mNotifyView = mNotifyView;
+        mNotifyView.setPresenter(this);
     }
 
-    public static NotifyPresenter newInstance(MusicService mMusicService, NotifyContract.View mNotifyView) {
+    public static NotifyPresenter newInstance(MusicService mMusicService,
+                                              NotifyContract.View mNotifyView) {
         NotifyPresenter presenter = new NotifyPresenter(mMusicService, mNotifyView);
         mNotifyView.setPresenter(presenter);
         return presenter;
     }
 
-    /**
-     * 注册广播接收器
-     */
-    private void registerBroadcast() {
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(ACTION_PLAY);
-        filter.addAction(ACTION_PAUSE);
-        filter.addAction(ACTION_PRE);
-        filter.addAction(ACTION_NEXT);
-        filter.addAction(ACTION_CLOSE);
-        mMusicService.registerReceiver(mNotifyReceiver, filter);
-    }
-
-    /**
-     * 解注册
-     */
-    private void unRegisterBroadcast() {
-        mMusicService.unregisterReceiver(mNotifyReceiver);
-    }
-
     @Override
     public void start() {
-        registerBroadcast();
+        //添加回调
+        mMusicService.addMusicCallBack(this);
         mNotifyView.firstShow();
         mIsNotify = true;
     }
@@ -130,8 +72,9 @@ public class NotifyPresenter implements NotifyContract.Presenter {
     @Override
     public void playMusic() {
         int location = mMusicService.play();
-        boolean isNoChange = location == MusicService.INDEX_FAILED;
-        mNotifyView.updateMusic(MusicService.PlayState.PLAY, isNoChange ? null : mMusics.get(location));
+        boolean isNoChange = location == MusicService.INDEX_DEFAULT;
+        mNotifyView.updateMusic(MusicService.PlayState.PLAY,
+                isNoChange ? null : mMusics.get(location));
     }
 
     @Override
@@ -153,14 +96,17 @@ public class NotifyPresenter implements NotifyContract.Presenter {
     }
 
     @Override
-    public void stopMusic() {
+    public void close() {
+        mIsNotify = false;
+        recycleUi();
         mMusicService.stopMusic();
     }
 
     @Override
     public void recycleUi() {
+        //移除回调
+        mMusicService.removeMusicCallBack(this);
         mNotifyView.closeNotify();
-        unRegisterBroadcast();
     }
 
     /**
@@ -168,6 +114,7 @@ public class NotifyPresenter implements NotifyContract.Presenter {
      *
      * @param musics 音乐数据
      */
+    @Override
     public void onInitMusicData(List<Music> musics) {
         this.mMusics = musics;
     }
@@ -178,8 +125,15 @@ public class NotifyPresenter implements NotifyContract.Presenter {
      * @param state    播放状态
      * @param position 位置
      */
-    public void onChangeMusic(MusicService.PlayState state, int position) {
-        boolean isNoChange = position == MusicService.INDEX_FAILED;
+    @Override
+    public void onChangeCurrMusic(MusicService.PlayState state, int position) {
+        boolean isNoChange = position == MusicService.INDEX_DEFAULT;
         mNotifyView.updateMusic(state, isNoChange ? null : mMusics.get(position));
     }
+
+    @Override
+    public void onChangeMusicMode(MusicService.PlayMode mode) {
+        // null
+    }
+
 }

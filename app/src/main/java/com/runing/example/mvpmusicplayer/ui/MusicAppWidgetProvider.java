@@ -67,7 +67,7 @@ public class MusicAppWidgetProvider extends AppWidgetProvider implements MusicAW
         final String action = intent.getAction();
         switch (action) {
             //播放
-            case MusicAWContract.Presenter.ACTION_PLAY:
+            case ACTION_PLAY:
                 //检查服务
                 if (mIsAction) {
                     mPresenter.playMusic();
@@ -77,38 +77,38 @@ public class MusicAppWidgetProvider extends AppWidgetProvider implements MusicAW
                 }
                 break;
             //搜索
-            case MusicAWContract.Presenter.ACTION_SEARCH:
+            case ACTION_SEARCH:
                 mPresenter.enterSearch();
                 break;
             //详情
-            case MusicAWContract.Presenter.ACTION_DETAIL:
+            case ACTION_DETAIL:
                 mPresenter.enterDetail();
                 break;
         }
         if (mIsAction) {
             switch (action) {
                 //列表循环
-                case MusicAWContract.Presenter.ACTION_MODE_LOOP:
+                case ACTION_MODE_LOOP:
                     mPresenter.setPlayMode(MusicService.PlayMode.ONE);
                     break;
                 //单曲循环
-                case MusicAWContract.Presenter.ACTION_MODE_ONE:
+                case ACTION_MODE_ONE:
                     mPresenter.setPlayMode(MusicService.PlayMode.RANDOM);
                     break;
                 //随机播放
-                case MusicAWContract.Presenter.ACTION_MODE_RANDOM:
+                case ACTION_MODE_RANDOM:
                     mPresenter.setPlayMode(MusicService.PlayMode.LOOP);
                     break;
                 //暂停
-                case MusicAWContract.Presenter.ACTION_PAUSE:
+                case ACTION_PAUSE:
                     mPresenter.pauseMusic();
                     break;
                 //上一曲
-                case MusicAWContract.Presenter.ACTION_PRE:
+                case ACTION_PRE:
                     mPresenter.preMusic();
                     break;
                 //下一曲
-                case MusicAWContract.Presenter.ACTION_NEXT:
+                case ACTION_NEXT:
                     mPresenter.nextMusic();
                     break;
 
@@ -145,7 +145,8 @@ public class MusicAppWidgetProvider extends AppWidgetProvider implements MusicAW
      */
     private void updateMusicAW() {
         AppWidgetManager manager = AppWidgetManager.getInstance(mContext);
-        manager.updateAppWidget(new ComponentName(mContext, MusicAppWidgetProvider.class), mContentView);
+        manager.updateAppWidget(new ComponentName(mContext,
+                MusicAppWidgetProvider.class), mContentView);
     }
 
     @Override
@@ -156,6 +157,11 @@ public class MusicAppWidgetProvider extends AppWidgetProvider implements MusicAW
         }
     }
 
+    /**
+     * 初始化
+     *
+     * @param context 上下文
+     */
     private void init(Context context) {
         initRemoteViews(context);
         initPresenter(context);
@@ -355,7 +361,7 @@ public class MusicAppWidgetProvider extends AppWidgetProvider implements MusicAW
     }
 
     private void setMusicImageOnClickListener() {
-        Intent intent = new Intent(MusicAWContract.Presenter.ACTION_DETAIL);
+        Intent intent = new Intent(ACTION_DETAIL);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(mContext, 0,
                 intent, PendingIntent.FLAG_UPDATE_CURRENT);
         mContentView.setOnClickPendingIntent(R.id.iv_image, pendingIntent);
@@ -365,7 +371,7 @@ public class MusicAppWidgetProvider extends AppWidgetProvider implements MusicAW
      * 设置播放按钮监听
      */
     private void setPlayBtnOnClickListener() {
-        Intent intent = new Intent(MusicAWContract.Presenter.ACTION_PLAY);
+        Intent intent = new Intent(ACTION_PLAY);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(mContext, 0,
                 intent, PendingIntent.FLAG_UPDATE_CURRENT);
         mContentView.setOnClickPendingIntent(R.id.iv_play, pendingIntent);
@@ -375,7 +381,7 @@ public class MusicAppWidgetProvider extends AppWidgetProvider implements MusicAW
      * 设置暂停按钮监听
      */
     private void setPauseBtnOnClickListener() {
-        Intent intent = new Intent(MusicAWContract.Presenter.ACTION_PAUSE);
+        Intent intent = new Intent(ACTION_PAUSE);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(mContext, 0,
                 intent, PendingIntent.FLAG_UPDATE_CURRENT);
         mContentView.setOnClickPendingIntent(R.id.iv_pause, pendingIntent);
@@ -385,7 +391,7 @@ public class MusicAppWidgetProvider extends AppWidgetProvider implements MusicAW
      * 设置上一曲按钮监听
      */
     private void setPreBtnOnClickListener() {
-        Intent intent = new Intent(MusicAWContract.Presenter.ACTION_PRE);
+        Intent intent = new Intent(ACTION_PRE);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(mContext, 0,
                 intent, PendingIntent.FLAG_UPDATE_CURRENT);
         mContentView.setOnClickPendingIntent(R.id.iv_pre, pendingIntent);
@@ -395,7 +401,7 @@ public class MusicAppWidgetProvider extends AppWidgetProvider implements MusicAW
      * 设置下一曲按钮监听
      */
     private void setNextBtnOnClickListener() {
-        Intent intent = new Intent(MusicAWContract.Presenter.ACTION_NEXT);
+        Intent intent = new Intent(ACTION_NEXT);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(mContext, 0,
                 intent, PendingIntent.FLAG_UPDATE_CURRENT);
         mContentView.setOnClickPendingIntent(R.id.iv_next, pendingIntent);
@@ -405,7 +411,7 @@ public class MusicAppWidgetProvider extends AppWidgetProvider implements MusicAW
      * 设置搜索按钮监听
      */
     private void setSearchBtnOnClickListener() {
-        Intent intent = new Intent(MusicAWContract.Presenter.ACTION_SEARCH);
+        Intent intent = new Intent(ACTION_SEARCH);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(mContext, 0,
                 intent, PendingIntent.FLAG_UPDATE_CURRENT);
         mContentView.setOnClickPendingIntent(R.id.iv_search, pendingIntent);
@@ -415,7 +421,7 @@ public class MusicAppWidgetProvider extends AppWidgetProvider implements MusicAW
      * 设置列表循环按钮监听
      */
     private void setLoopBtnOnClickListener() {
-        Intent intent = new Intent(MusicAWContract.Presenter.ACTION_MODE_LOOP);
+        Intent intent = new Intent(ACTION_MODE_LOOP);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(mContext, 0,
                 intent, PendingIntent.FLAG_UPDATE_CURRENT);
         mContentView.setOnClickPendingIntent(R.id.iv_mode_loop, pendingIntent);
@@ -425,7 +431,7 @@ public class MusicAppWidgetProvider extends AppWidgetProvider implements MusicAW
      * 设置单曲循环按钮监听
      */
     private void setOneBtnOnClickListener() {
-        Intent intent = new Intent(MusicAWContract.Presenter.ACTION_MODE_ONE);
+        Intent intent = new Intent(ACTION_MODE_ONE);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(mContext, 0,
                 intent, PendingIntent.FLAG_UPDATE_CURRENT);
         mContentView.setOnClickPendingIntent(R.id.iv_mode_one, pendingIntent);
@@ -435,7 +441,7 @@ public class MusicAppWidgetProvider extends AppWidgetProvider implements MusicAW
      * 设置随机播放按钮监听
      */
     private void setRandomBtnOnClickListener() {
-        Intent intent = new Intent(MusicAWContract.Presenter.ACTION_MODE_RANDOM);
+        Intent intent = new Intent(ACTION_MODE_RANDOM);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(mContext, 0,
                 intent, PendingIntent.FLAG_UPDATE_CURRENT);
         mContentView.setOnClickPendingIntent(R.id.iv_mode_random, pendingIntent);

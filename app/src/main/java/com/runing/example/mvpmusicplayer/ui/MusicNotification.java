@@ -5,8 +5,10 @@ import android.annotation.TargetApi;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.os.Build;
 import android.support.annotation.NonNull;
@@ -40,12 +42,11 @@ import com.runing.example.mvpmusicplayer.util.BitmapUtils;
 public class MusicNotification implements NotifyContract.View {
 
     private Context mContext;
+    private NotifyContract.Presenter mPresenter;
     /**
      * 通知
      */
     private Notification mMusicNotification;
-
-//    private NotifyContract.Presenter mPresenter;
     /**
      * 通知上的远程View
      */
@@ -59,90 +60,50 @@ public class MusicNotification implements NotifyContract.View {
      */
     NotificationManager mNotificationManager;
 
+    /**
+     * 广播接收器
+     */
+    private BroadcastReceiver mNotifyReceiver = new BroadcastReceiver() {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            switch (action) {
+                //播放
+                case ACTION_PLAY:
+                    mPresenter.playMusic();
+                    break;
+                //暂停
+                case ACTION_PAUSE:
+                    mPresenter.pauseMusic();
+                    break;
+                //上一曲
+                case ACTION_PRE:
+                    mPresenter.preMusic();
+                    break;
+                //下一曲
+                case ACTION_NEXT:
+                    mPresenter.nextMusic();
+                    break;
+                //关闭
+                case ACTION_CLOSE:
+                    mPresenter.close();
+                    break;
+                default:
+                    throw new IllegalArgumentException("action missing!");
+            }
+        }
+    };
+
     public MusicNotification(Context context) {
         this.mContext = context;
     }
 
-    private void init() {
+    @Override
+    public void firstShow() {
+        registerBroadcast();
         initRemoteViews();
         initNotification();
-    }
-
-    /**
-     * 初始化远程View
-     */
-    private void initRemoteViews() {
-        mContentView = new RemoteViews(mContext.getPackageName(),
-                R.layout.notification_music_layout);
-        mMusicImgLength = mContext.getResources().getDimensionPixelSize(R.dimen.notification_height);
-
-        setPlayBtnOnClickListener();
-        setPauseBtnOnClickListener();
-        setPreBtnOnClickListener();
-        setNextBtnOnClickListener();
-        setCloseBtnOnClickListener();
-    }
-
-    /**
-     * 从新产生RemoteView
-     */
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
-    private void produceRemoteViews() {
-        mContentView = null;
-        mContentView = new RemoteViews(mContext.getPackageName(),
-                R.layout.notification_music_layout);
-        mMusicNotification.bigContentView = mContentView;
-    }
-
-    /**
-     * 设置播放按钮监听
-     */
-    private void setPlayBtnOnClickListener() {
-        Intent intent = new Intent(NotifyContract.Presenter.ACTION_PLAY);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(mContext, 0,
-                intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        mContentView.setOnClickPendingIntent(R.id.iv_play, pendingIntent);
-    }
-
-    /**
-     * 设置暂停按钮监听
-     */
-    private void setPauseBtnOnClickListener() {
-        Intent intent = new Intent(NotifyContract.Presenter.ACTION_PAUSE);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(mContext, 0,
-                intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        mContentView.setOnClickPendingIntent(R.id.iv_pause, pendingIntent);
-    }
-
-    /**
-     * 设置上一曲按钮监听
-     */
-    private void setPreBtnOnClickListener() {
-        Intent intent = new Intent(NotifyContract.Presenter.ACTION_PRE);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(mContext, 0,
-                intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        mContentView.setOnClickPendingIntent(R.id.iv_pre, pendingIntent);
-    }
-
-    /**
-     * 设置下一曲按钮监听
-     */
-    private void setNextBtnOnClickListener() {
-        Intent intent = new Intent(NotifyContract.Presenter.ACTION_NEXT);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(mContext, 0,
-                intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        mContentView.setOnClickPendingIntent(R.id.iv_next, pendingIntent);
-    }
-
-    /**
-     * 设置关闭按钮监听
-     */
-    private void setCloseBtnOnClickListener() {
-        Intent intent = new Intent(NotifyContract.Presenter.ACTION_CLOSE);
-
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(mContext, 0,
-                intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        mContentView.setOnClickPendingIntent(R.id.iv_close, pendingIntent);
     }
 
     /**
@@ -169,14 +130,99 @@ public class MusicNotification implements NotifyContract.View {
         mNotificationManager.notify(1, mMusicNotification);
     }
 
-    @Override
-    public void setPresenter(NotifyContract.Presenter presenter) {
-//        this.mPresenter = presenter;
+    /**
+     * 初始化远程View
+     */
+    private void initRemoteViews() {
+        mContentView = new RemoteViews(mContext.getPackageName(),
+                R.layout.notification_music_layout);
+        mMusicImgLength = mContext.getResources().getDimensionPixelSize(R.dimen.notification_height);
+
+        setPlayBtnOnClickListener();
+        setPauseBtnOnClickListener();
+        setPreBtnOnClickListener();
+        setNextBtnOnClickListener();
+        setCloseBtnOnClickListener();
+    }
+
+    /**
+     * 注册广播接收器
+     */
+    private void registerBroadcast() {
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(NotifyContract.View.ACTION_PLAY);
+        filter.addAction(NotifyContract.View.ACTION_PAUSE);
+        filter.addAction(NotifyContract.View.ACTION_PRE);
+        filter.addAction(NotifyContract.View.ACTION_NEXT);
+        filter.addAction(NotifyContract.View.ACTION_CLOSE);
+        mContext.registerReceiver(mNotifyReceiver, filter);
+    }
+
+    /**
+     * 从新产生RemoteView
+     */
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+    private void produceRemoteViews() {
+        mContentView = null;
+        mContentView = new RemoteViews(mContext.getPackageName(),
+                R.layout.notification_music_layout);
+        mMusicNotification.bigContentView = mContentView;
+    }
+
+    /**
+     * 设置播放按钮监听
+     */
+    private void setPlayBtnOnClickListener() {
+        Intent intent = new Intent(ACTION_PLAY);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(mContext, 0,
+                intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        mContentView.setOnClickPendingIntent(R.id.iv_play, pendingIntent);
+    }
+
+    /**
+     * 设置暂停按钮监听
+     */
+    private void setPauseBtnOnClickListener() {
+        Intent intent = new Intent(ACTION_PAUSE);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(mContext, 0,
+                intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        mContentView.setOnClickPendingIntent(R.id.iv_pause, pendingIntent);
+    }
+
+    /**
+     * 设置上一曲按钮监听
+     */
+    private void setPreBtnOnClickListener() {
+        Intent intent = new Intent(ACTION_PRE);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(mContext, 0,
+                intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        mContentView.setOnClickPendingIntent(R.id.iv_pre, pendingIntent);
+    }
+
+    /**
+     * 设置下一曲按钮监听
+     */
+    private void setNextBtnOnClickListener() {
+        Intent intent = new Intent(ACTION_NEXT);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(mContext, 0,
+                intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        mContentView.setOnClickPendingIntent(R.id.iv_next, pendingIntent);
+    }
+
+    /**
+     * 设置关闭按钮监听
+     */
+    private void setCloseBtnOnClickListener() {
+        Intent intent = new Intent(ACTION_CLOSE);
+
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(mContext, 0,
+                intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        mContentView.setOnClickPendingIntent(R.id.iv_close, pendingIntent);
     }
 
     @Override
-    public void firstShow() {
-        init();
+    public void setPresenter(NotifyContract.Presenter presenter) {
+        this.mPresenter = presenter;
     }
 
     @Override
@@ -202,7 +248,15 @@ public class MusicNotification implements NotifyContract.View {
 
     @Override
     public void closeNotify() {
+        unRegisterBroadcast();
         mNotificationManager.cancel(1);
+    }
+
+    /**
+     * 解注册
+     */
+    private void unRegisterBroadcast() {
+        mContext.unregisterReceiver(mNotifyReceiver);
     }
 
     /**

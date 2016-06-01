@@ -205,6 +205,14 @@ public class DetailActivity extends BaseActivity implements DetailContract.View
     @Override
     public void restoreMusic(MusicState state) {
         restoreMusicView(state);
+        int total = state.getTotal();
+        int progress = state.getProgress();
+
+        mMusicSeekBar.setMax(total);
+        mMusicSeekBar.setProgress(progress);
+        mTotalTime.setText(TimeUtils.millis2MSStr(total));
+        mCurrTime.setText(TimeUtils.millis2MSStr(progress));
+
         mPresenter.setOnProgressListener(new MusicService.OnProgressListener() {
             @Override
             public void start(int total) {

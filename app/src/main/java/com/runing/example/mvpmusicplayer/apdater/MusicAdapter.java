@@ -66,7 +66,7 @@ public final class MusicAdapter extends BaseMyAdapter<MusicAdapter.ViewHolder> {
         Music data = (Music) getItem(position);
         holder.name.setText(data.getTitle());
         holder.singer.setText(data.getArtist());
-        holder.time.setText(TimeUtils.INSTANCE.millis2MSStr(data.getDuration()));
+        holder.time.setText(TimeUtils.millis2MSStr(data.getDuration()));
         if (mPlaying[position]) {
             holder.more.setImageResource(R.drawable.src_playlist_playing);
         } else {

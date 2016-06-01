@@ -9,6 +9,7 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.widget.Toast;
 
+import com.runing.example.mvpmusicplayer.R;
 import com.runing.example.mvpmusicplayer.contract.NotifyContract;
 import com.runing.example.mvpmusicplayer.data.bean.Music;
 import com.runing.example.mvpmusicplayer.data.bean.MusicState;
@@ -18,7 +19,10 @@ import com.runing.example.mvpmusicplayer.presenter.NotifyPresenter;
 import com.runing.example.mvpmusicplayer.ui.MusicNotification;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by runing on 2016/5/13.
@@ -56,23 +60,22 @@ public final class MusicService extends Service {
      */
     private static final String MUSIC_PLAY_MODE_KEY = "mPlayMode";
     /**
-     * 默认musicId
+     * 默认index
      */
-    private static final long DEFAULT_MUSIC_ID = -1;
+    public static final int INDEX_DEFAULT = -1;
     /**
-     * 默认position
+     * 为外部提供Service
      */
-    public static final int INDEX_FAILED = -1;
-
     private static volatile MusicService mMusicService;
     /**
-     * 数据回调
+     * 音乐状态回调
      */
-    private UpdateCallBack mCallBack;
+    private Set<MusicCallBack> mMusicCallBack = new HashSet<>();
     /**
      * 音乐数据
      */
-    private List<Music> mMusics;
+    @SuppressWarnings("unchecked") //防止为null
+    private List<Music> mMusics = Collections.EMPTY_LIST;
     /**
      * 多媒体
      */
@@ -80,7 +83,7 @@ public final class MusicService extends Service {
     /**
      * 当前musicId
      */
-    private long mMusicId = DEFAULT_MUSIC_ID;
+    private long mMusicId = INDEX_DEFAULT;
     /**
      * 当前index
      */
@@ -106,28 +109,23 @@ public final class MusicService extends Service {
      */
     private Handler mHandler = new Handler();
     /**
-     * 播放模式
+     * 当前播放模式
      */
-    private PlayMode mPlayMode = PlayMode.LOOP;
+    private PlayMode mCurrentPlayMode = PlayMode.LOOP;
     /**
-     * 状态栏通知presenter
+     * 通知presenter
      */
     private NotifyPresenter mNotifyPresenter;
-
+    /**
+     * 小部件presenter
+     */
     private MusicAWPresenter mMusicAWPresenter;
-
-    public void setMusicAWPresenter(MusicAWPresenter mMusicAWPresenter) {
-        this.mMusicAWPresenter = mMusicAWPresenter;
-        if (mMusics != null && mMusicAWPresenter != null) {
-            mMusicAWPresenter.onInitMusicData(mMusics);
-        }
-    }
 
     /**
      * 播放状态
      */
     public enum PlayState {
-        /*
+        /**
          * 播放
          */
         PLAY,
@@ -143,82 +141,6 @@ public final class MusicService extends Service {
          * 停止
          */
         STOP
-    }
-
-    /**
-     * 进度任务
-     */
-    private Runnable mProgressRun = new Runnable() {
-        @Override
-        public void run() {
-            if (isActive()) {
-                if (mOnProgressListener != null) {
-                    mOnProgressListener.progress(mCurrentProgress = mMediaPlayer.getCurrentPosition());
-                }
-            }
-            mHandler.postDelayed(this, 1000);
-        }
-    };
-
-    public interface OnProgressListener {
-
-        /**
-         * 开始
-         *
-         * @param total 总数
-         */
-        void start(int total);
-
-        /**
-         * 进行中
-         *
-         * @param progress 进度
-         */
-        void progress(int progress);
-
-    }
-
-    public interface UpdateCallBack {
-        /**
-         * 初始化音乐列表
-         *
-         * @param musics 数据
-         */
-        void onInitMusicData(List<Music> musics);
-
-        /**
-         * 音乐发生切换
-         *
-         * @param position 位置
-         */
-        void onChangeMusic(PlayState state, int position);
-
-        void onChangeMode(PlayMode mode);
-    }
-
-    public void setDataCallBack(UpdateCallBack mCallBack) {
-        this.mCallBack = mCallBack;
-        if (mMusics != null && mCallBack != null) {
-            mCallBack.onInitMusicData(mMusics);
-        }
-    }
-
-    public void setOnProgressListener(OnProgressListener mOnProgressListener) {
-        this.mOnProgressListener = mOnProgressListener;
-    }
-
-    /**
-     * 取消进度监听
-     */
-    public void cancelProgressListener() {
-        this.mOnProgressListener = null;
-    }
-
-    /**
-     * 取消数据回调
-     */
-    public void cancelDataCallBack() {
-        this.mCallBack = null;
     }
 
     /**
@@ -241,221 +163,214 @@ public final class MusicService extends Service {
     }
 
     /**
+     * 音乐监听
+     */
+    public interface MusicCallBack {
+        /**
+         * 初始化音乐数据
+         *
+         * @param musics 音乐集合
+         */
+        void onInitMusicData(List<Music> musics);
+
+        /**
+         * 改变音乐
+         *
+         * @param state    播放状态
+         * @param position 播放位置
+         */
+        void onChangeCurrMusic(PlayState state, int position);
+
+        /**
+         * 播放模式切换
+         *
+         * @param mode 模式
+         */
+        void onChangeMusicMode(PlayMode mode);
+    }
+
+    /**
+     * 进度监听
+     */
+    public interface OnProgressListener {
+
+        /**
+         * 开始
+         *
+         * @param total 总数
+         */
+        void start(int total);
+
+        /**
+         * 进行中
+         *
+         * @param progress 进度
+         */
+        void progress(int progress);
+
+    }
+
+    /**
      * 设置播放模式
      *
-     * @param mPlayMode 模式
+     * @param mCurrentPlayMode 播放模式
      */
-    public void setPlayMode(PlayMode mPlayMode) {
-        this.mPlayMode = mPlayMode;
-        notifyPlayMode();
+    public void setPlayMode(PlayMode mCurrentPlayMode) {
+        this.mCurrentPlayMode = mCurrentPlayMode;
         if (isActive()) {
-            if (mPlayMode == PlayMode.ONE) {
+            if (mCurrentPlayMode == PlayMode.ONE) {
                 mMediaPlayer.setLooping(true);
             } else {
                 mMediaPlayer.setLooping(false);
             }
         }
+        notifyPlayMode(mCurrentPlayMode);
     }
+
+    /**
+     * 进度任务
+     */
+    private Runnable mProgressRun = new Runnable() {
+        @Override
+        public void run() {
+            if (isActive()) {
+                if (mOnProgressListener != null) {
+                    mOnProgressListener.progress(mCurrentProgress = mMediaPlayer.getCurrentPosition());
+                }
+            }
+            mHandler.postDelayed(this, 1000);
+        }
+    };
 
     /**
      * 指定进度
      *
      * @param progress 进度
+     * @throws IllegalArgumentException 进度超过限制
      */
     public void seekTo(int progress) {
         if (isActive()) {
             mCurrentProgress = progress;
-            mMediaPlayer.seekTo(progress);
+            if (progress > mMediaPlayer.getDuration()) {
+                throw new IllegalArgumentException("progress overflow!");
+            } else {
+                mMediaPlayer.seekTo(progress);
+            }
         }
     }
 
     /**
-     * 初始化通知
+     * 添加音乐回调
+     *
+     * @param musicCallBack 回调
      */
-    private void initNotification() {
-        NotifyContract.View mNotifyView = new MusicNotification(this);
-        mNotifyPresenter = NotifyPresenter.newInstance(this, mNotifyView);
-        mNotifyPresenter.onInitMusicData(mMusics);
-        mNotifyPresenter.start();
-        mNotifyPresenter.onChangeMusic(PlayState.STOP, mIndex);
+    public void addMusicCallBack(MusicCallBack musicCallBack) {
+        if (musicCallBack != null && hasMusicData()) {
+            musicCallBack.onInitMusicData(mMusics);
+        }
+        mMusicCallBack.add(musicCallBack);
     }
 
-    @Override
-    public void onCreate() {
-        mMusicService = this;
-        initMediaPlayer();
-        initData();
+    /**
+     * 移除音乐回调
+     *
+     * @param musicCallBack 回调
+     */
+    public void removeMusicCallBack(MusicCallBack musicCallBack) {
+        mMusicCallBack.remove(musicCallBack);
     }
 
+    /**
+     * 移除所有Music回调
+     */
+    private void removeAllMusicCallBack() {
+        if (!mMusicCallBack.isEmpty()) {
+            mMusicCallBack.clear();
+        }
+    }
+
+    /**
+     * 设置小部件presenter
+     */
+    public void setMusicAWPresenter(@Nullable MusicAWPresenter mMusicAWPresenter) {
+        this.mMusicAWPresenter = mMusicAWPresenter;
+        if (mMusicAWPresenter != null) {
+
+        }
+//        if (mMusics != null && mMusicAWPresenter != null) {
+//            mMusicAWPresenter.onInitMusicData(mMusics);
+//        }
+    }
+
+    /**
+     * 设置进度监听
+     *
+     * @param mOnProgressListener 回调
+     */
+    public void setOnProgressListener(OnProgressListener mOnProgressListener) {
+        this.mOnProgressListener = mOnProgressListener;
+    }
+
+    /**
+     * 取消进度监听
+     */
+    public void cancelProgressListener() {
+        this.mOnProgressListener = null;
+    }
+
+    /**
+     * 获取全局服务
+     *
+     * @return 服务实例
+     */
     public static MusicService getGlobalService() {
         return mMusicService;
     }
 
     /**
-     * 获取当前音乐状态
+     * 音乐处于活动状态
      *
-     * @return 音乐状态实例
+     * @return yes or no?
      */
-    public MusicState getCurrentMusicState() {
-        MusicState musicState = new MusicState();
-        musicState.setMusic(mCurrMusic);
-        musicState.setMode(mPlayMode);
-        musicState.setPosition(INDEX_FAILED);
-        if (isActive()) {
-            musicState.setTotal(mMediaPlayer.getDuration());
-            musicState.setPosition(mIndex);
-            musicState.setProgress(mCurrentProgress);
-        }
-        if (mMediaPlayer.isPlaying()) {
-            musicState.setState(PlayState.PLAY);
-        } else {
-            musicState.setState(PlayState.PAUSE);
-        }
-        return musicState;
+    private boolean isActive() {
+        return mIsPause || mMediaPlayer.isPlaying();
     }
 
     /**
-     * 初始化
+     * 通知音乐数据
      */
-    private void initData() {
-        final MusicGet musicGet = new MusicGet();
-        musicGet.getMusicList(getContentResolver(), new MusicGet.ScanCallBack() {
-            @Override
-            public void onOverScanned(List<Music> musics) {
-                MusicService.this.mMusics = musics;
-                initHistoryMusic();
-                restoreMusic();
-                if (mCallBack != null) {
-                    mCallBack.onInitMusicData(musics);
-                }
-                if (mMusicAWPresenter != null) {
-                    mMusicAWPresenter.onInitMusicData(musics);
-                }
-                mProgressRun.run();
-                initNotification();
-            }
-        });
-    }
-
-    /**
-     * 恢复进度
-     */
-    private void restoreMusic() {
-        if (mCurrentProgress != 0) {
-            mIsPause = true;
-            try {
-                mMediaPlayer.setDataSource(mCurrMusic.getUrl());
-                mMediaPlayer.prepare();
-                mMediaPlayer.seekTo(mCurrentProgress);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-        }
-    }
-
-    /**
-     * 初始化历史音乐
-     */
-    private void initHistoryMusic() {
-        if (hasMusicData()) {
-            readMusicHistory();
-            mIndex = findIndex(mMusics, mMusicId);
-            if (mIndex == INDEX_FAILED) {
-                setDefaultMusic();
-            } else {
-                mCurrMusic = mMusics.get(mIndex);
+    private void notifyMusicData() {
+        if (!mMusicCallBack.isEmpty()) {
+            for (MusicCallBack callBack : mMusicCallBack) {
+                callBack.onInitMusicData(mMusics);
             }
         }
     }
 
     /**
-     * 查询index
-     */
-    public static int findIndex(List<Music> mMusics, long mMusicId) {
-        int index = 0;
-        for (Music music : mMusics) {
-            if (music.getId() == mMusicId) {
-                return index;
-            } else {
-                index++;
-            }
-        }
-        return INDEX_FAILED;
-    }
-
-    /**
-     * 设置默认音乐
-     */
-    private void setDefaultMusic() {
-        mIndex = 0;
-        mCurrentProgress = 0;
-        updateCurrMusic();
-    }
-
-    /**
-     * 更新当前音乐
-     */
-    private void updateCurrMusic() {
-        mCurrMusic = mMusics.get(mIndex);
-        mMusicId = mCurrMusic.getId();
-    }
-
-    /**
-     * 是否有数据
+     * 通知音乐模式切换
      *
-     * @return has data ?
+     * @param mode 模式
      */
-    private boolean hasMusicData() {
-        return mMusics.size() != 0;
-    }
-
-    /**
-     * 初始化多媒体
-     */
-    private void initMediaPlayer() {
-        mMediaPlayer = new MediaPlayer();
-        mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-            @Override
-            public void onCompletion(MediaPlayer mp) {
-                final int position = nextMusic();
-                if (mCallBack != null && mPlayMode != PlayMode.ONE) {
-                    mCallBack.onChangeMusic(PlayState.SWITCH, position);
-                }
-                if (mNotifyPresenter.isNotify()) {
-                    mNotifyPresenter.onChangeMusic(PlayState.SWITCH, position);
-                }
-                if (mMusicAWPresenter != null) {
-                    mMusicAWPresenter.onChangeMusic(PlayState.SWITCH, position);
-                }
+    private void notifyPlayMode(PlayMode mode) {
+        if (!mMusicCallBack.isEmpty()) {
+            for (MusicCallBack callBack : mMusicCallBack) {
+                callBack.onChangeMusicMode(mode);
             }
-        });
+        }
     }
 
     /**
-     * 通知音乐切换
+     * 通知播放状态
+     *
+     * @param state    状态
+     * @param position 位置
      */
     private void notifyPlayState(PlayState state, int position) {
-        if (mCallBack != null) {
-            mCallBack.onChangeMusic(state, position);
-        }
-        if (mNotifyPresenter != null && mNotifyPresenter.isNotify()) {
-            mNotifyPresenter.onChangeMusic(state, position);
-        }
-        if (mMusicAWPresenter != null) {
-            mMusicAWPresenter.onChangeMusic(state, position);
-        }
-    }
-
-    /**
-     * 通知模式切换
-     */
-    private void notifyPlayMode() {
-        if (mCallBack != null) {
-            mCallBack.onChangeMode(mPlayMode);
-        }
-        if (mMusicAWPresenter != null) {
-            mMusicAWPresenter.onChangeMode(mPlayMode);
+        if (!mMusicCallBack.isEmpty()) {
+            for (MusicCallBack callBack : mMusicCallBack) {
+                callBack.onChangeCurrMusic(state, position);
+            }
         }
     }
 
@@ -467,28 +382,31 @@ public final class MusicService extends Service {
     public int play() {
         if (mIsPause) {
             mMediaPlayer.start();
-            notifyPlayState(PlayState.SWITCH, INDEX_FAILED);
-            return INDEX_FAILED;
+            //改变状态，不改变音乐
+            notifyPlayState(PlayState.SWITCH, INDEX_DEFAULT);
+            return INDEX_DEFAULT;
         } else {
             playNewMusic();
+            //改变状态，并改变音乐
             notifyPlayState(PlayState.SWITCH, mIndex);
-            //初始化进度
+            //设置总进度
             if (mOnProgressListener != null) {
                 mOnProgressListener.progress(0);
                 mOnProgressListener.start(mMediaPlayer.getDuration());
             }
-            //检查通知状态
+            //开启通知
             if (!mNotifyPresenter.isNotify()) {
                 mNotifyPresenter.start();
-                mNotifyPresenter.onChangeMusic(PlayState.PLAY, mIndex);
+                mNotifyPresenter.onChangeCurrMusic(PlayState.PLAY, mIndex);
             }
         }
+        //取消暂停
         mIsPause = false;
         return mIndex;
     }
 
     /**
-     * 播放新的音乐
+     * 播放新音乐
      */
     private void playNewMusic() {
         mMediaPlayer.reset();
@@ -497,10 +415,11 @@ public final class MusicService extends Service {
             mMediaPlayer.prepare();
         } catch (IOException e) {
             e.printStackTrace();
-            Toast.makeText(MusicService.this, "音乐播放失败!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(MusicService.this, getResources().getText(R.string.failed_play_music),
+                    Toast.LENGTH_SHORT).show();
         }
         //播放新音乐重新设置单曲循环
-        if (mPlayMode == PlayMode.ONE) {
+        if (mCurrentPlayMode == PlayMode.ONE) {
             mMediaPlayer.setLooping(true);
         }
         mMediaPlayer.start();
@@ -514,8 +433,9 @@ public final class MusicService extends Service {
             mMediaPlayer.pause();
             mIsPause = true;
         }
-        notifyPlayState(PlayState.PAUSE, INDEX_FAILED);
+        notifyPlayState(PlayState.PAUSE, INDEX_DEFAULT);
     }
+
 
     /**
      * 下一首
@@ -524,12 +444,12 @@ public final class MusicService extends Service {
      */
     public int nextMusic() {
         //检查模式
-        checkMode();
+        checkMode(mCurrentPlayMode);
         updateCurrMusic();
-        mIsPause = false;
         mIsPause = false;
         return play();
     }
+
 
     /**
      * 上一首
@@ -542,8 +462,8 @@ public final class MusicService extends Service {
         } else {
             mIndex--;
         }
-        mIsPause = false;
         updateCurrMusic();
+        mIsPause = false;
         return play();
     }
 
@@ -556,33 +476,9 @@ public final class MusicService extends Service {
             mMediaPlayer.stop();
         }
         mCurrentProgress = 0;
-        notifyPlayState(PlayState.STOP, INDEX_FAILED);
-        if (mCallBack != null) {
-            mCallBack.onChangeMusic(PlayState.STOP, INDEX_FAILED);
-        }
+        notifyPlayState(PlayState.STOP, INDEX_DEFAULT);
     }
 
-    /**
-     * 模式检查
-     */
-    private void checkMode() {
-        switch (mPlayMode) {
-            case LOOP:
-                mMediaPlayer.setLooping(false);
-            case ONE:
-                if (mIndex == mMusics.size() - 1) {
-                    mIndex = 0;
-                } else {
-                    mIndex++;
-                }
-                break;
-            case RANDOM: {
-                mMediaPlayer.setLooping(false);
-                mIndex = (int) (Math.random() * (mMusics.size() - 1));
-                break;
-            }
-        }
-    }
 
     /**
      * 播放指定音乐
@@ -600,30 +496,185 @@ public final class MusicService extends Service {
         else if (mIsPause) {
             return play();
         }
-        return INDEX_FAILED;
+        return INDEX_DEFAULT;
     }
 
     /**
-     * 保存播放历史
+     * 更新当前音乐
      */
-    private void saveMusicHistory() {
-        SharedPreferences sharedPreferences = getSharedPreferences(SHARE_SAVE_NAME, MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putLong(MUSIC_ID_KAY, mMusicId);
-        editor.putInt(MUSIC_POSITION_KEY, mCurrentProgress);
-        editor.putString(MUSIC_PLAY_MODE_KEY, mPlayMode.toString());
-        editor.apply();
+    private void updateCurrMusic() {
+        mCurrMusic = mMusics.get(mIndex);
+        mMusicId = mCurrMusic.getId();
     }
 
     /**
-     * 读取播放历史
+     * 模式检查
      */
-    private void readMusicHistory() {
-        SharedPreferences sharedPreferences = getSharedPreferences(SHARE_SAVE_NAME, MODE_PRIVATE);
-        mMusicId = sharedPreferences.getLong(MUSIC_ID_KAY, DEFAULT_MUSIC_ID);
-        mCurrentProgress = sharedPreferences.getInt(MUSIC_POSITION_KEY, 0);
-        final String mode = sharedPreferences.getString(MUSIC_PLAY_MODE_KEY, PlayMode.ONE.toString());
-        mPlayMode = PlayMode.valueOf(mode);
+    private void checkMode(PlayMode mode) {
+        switch (mode) {
+            case RANDOM: {
+                mMediaPlayer.setLooping(false);
+                mIndex = (int) (Math.random() * (mMusics.size() - 1));
+                break;
+            }
+            case LOOP:
+                mMediaPlayer.setLooping(false);
+                // no break
+            default: {
+                if (mIndex == mMusics.size() - 1) {
+                    mIndex = 0;
+                } else {
+                    mIndex++;
+                }
+                break;
+            }
+        }
+    }
+
+    /**
+     * 提供当前音乐全部状态
+     *
+     * @return you know
+     */
+    public MusicState getCurrentMusicState() {
+        MusicState musicState = new MusicState();
+        //当前音乐
+        musicState.setMusic(mCurrMusic);
+        //当前模式
+        musicState.setMode(mCurrentPlayMode);
+        musicState.setPosition(INDEX_DEFAULT);
+        //正在播放
+        if (isActive()) {
+            musicState.setTotal(mMediaPlayer.getDuration());
+            musicState.setPosition(mIndex);
+            musicState.setProgress(mCurrentProgress);
+        }
+        if (mMediaPlayer.isPlaying()) {
+            musicState.setState(PlayState.PLAY);
+        } else {
+            musicState.setState(PlayState.PAUSE);
+        }
+        return musicState;
+    }
+
+    @Override
+    public void onCreate() {
+        mMusicService = this;
+        initMediaPlayer();
+        initData();
+    }
+
+    /**
+     * 初始化
+     */
+    private void initData() {
+        final MusicGet musicGet = new MusicGet();
+        musicGet.getMusicList(getContentResolver(), new MusicGet.ScanCallBack() {
+            @Override
+            public void onOverScanned(List<Music> musics) {
+                if (musics.isEmpty()) {
+                    return;
+                }
+                MusicService.this.mMusics = musics;
+                initHistoryMusic();
+                restoreMusic();
+                notifyMusicData();
+                //开启进度循环
+                mProgressRun.run();
+                //初始化通知
+                initNotification();
+            }
+        });
+    }
+
+    /**
+     * 初始化通知
+     */
+    private void initNotification() {
+        //创建通知实例
+        NotifyContract.View mNotifyView = new MusicNotification(this);
+        //创建通知presenter
+        mNotifyPresenter = NotifyPresenter.newInstance(this, mNotifyView);
+        mNotifyPresenter.start();
+        mNotifyPresenter.onChangeCurrMusic(PlayState.STOP, mIndex);
+    }
+
+    /**
+     * 还原音乐状态
+     */
+    private void restoreMusic() {
+        if (mCurrentProgress != 0) {
+            mIsPause = true;
+            try {
+                mMediaPlayer.setDataSource(mCurrMusic.getUrl());
+                mMediaPlayer.prepare();
+                mMediaPlayer.seekTo(mCurrentProgress);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * 初始化历史音乐
+     */
+    private void initHistoryMusic() {
+        readMusicHistory();
+        mIndex = findIndex(mMusics, mMusicId);
+        if (mIndex == INDEX_DEFAULT) {
+            setDefaultMusic();
+        } else {
+            mCurrMusic = mMusics.get(mIndex);
+        }
+    }
+
+    /**
+     * 查询index
+     */
+    public static int findIndex(List<Music> mMusics, long mMusicId) {
+        int index = 0;
+        for (Music music : mMusics) {
+            if (music.getId() == mMusicId) {
+                return index;
+            } else {
+                index++;
+            }
+        }
+        return INDEX_DEFAULT;
+    }
+
+    /**
+     * 设置默认音乐
+     */
+    private void setDefaultMusic() {
+        mIndex = 0;
+        mCurrentProgress = 0;
+        updateCurrMusic();
+    }
+
+    /**
+     * 是否有数据
+     *
+     * @return has data ?
+     */
+    private boolean hasMusicData() {
+        return !mMusics.isEmpty();
+    }
+
+    /**
+     * 初始化音频播放
+     */
+    private void initMediaPlayer() {
+        mMediaPlayer = new MediaPlayer();
+        mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                final int position = nextMusic();
+                if (mCurrentPlayMode != PlayMode.ONE) {
+                    notifyPlayState(PlayState.SWITCH, position);
+                }
+            }
+        });
     }
 
     @Override
@@ -634,44 +685,64 @@ public final class MusicService extends Service {
     }
 
     /**
+     * 保存播放历史
+     */
+    private void saveMusicHistory() {
+        SharedPreferences sharedPreferences = getSharedPreferences(SHARE_SAVE_NAME, MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putLong(MUSIC_ID_KAY, mMusicId);
+        editor.putInt(MUSIC_POSITION_KEY, mCurrentProgress);
+        editor.putString(MUSIC_PLAY_MODE_KEY, mCurrentPlayMode.toString());
+        editor.apply();
+    }
+
+    /**
+     * 读取播放历史
+     */
+    private void readMusicHistory() {
+        SharedPreferences sharedPreferences = getSharedPreferences(SHARE_SAVE_NAME, MODE_PRIVATE);
+        mMusicId = sharedPreferences.getLong(MUSIC_ID_KAY, INDEX_DEFAULT);
+        mCurrentProgress = sharedPreferences.getInt(MUSIC_POSITION_KEY, 0);
+        final String mode = sharedPreferences.getString(MUSIC_PLAY_MODE_KEY, PlayMode.ONE.toString());
+        mCurrentPlayMode = PlayMode.valueOf(mode);
+    }
+
+    /**
      * 回收资源
      */
     private void recycle() {
+        //移除音乐进度循环
         mHandler.removeCallbacks(mProgressRun);
-        cancelDataCallBack();
+        //移除所有音乐回调
+        removeAllMusicCallBack();
+        //取消进度监听
         cancelProgressListener();
+        //回收通知
         if (mNotifyPresenter.isNotify()) {
             mNotifyPresenter.recycleUi();
+            mNotifyPresenter = null;
         }
+        //回收小部件
         if (mMusicAWPresenter != null) {
             mMusicAWPresenter.recycleUi();
         }
+        //释放音频
         mMediaPlayer.release();
     }
 
     /**
-     * 处于活动状态
-     *
-     * @return yes or no?
+     * 提供Service实例
      */
-    private boolean isActive() {
-        return mIsPause || mMediaPlayer.isPlaying();
+    public class Binder extends android.os.Binder {
+        public MusicService getService() {
+            return MusicService.this;
+        }
     }
 
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
         return new Binder();
-    }
-
-    public class Binder extends android.os.Binder {
-
-        /**
-         * 返回service实例
-         */
-        public MusicService getService() {
-            return MusicService.this;
-        }
     }
 
 }

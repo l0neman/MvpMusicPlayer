@@ -51,7 +51,7 @@ public final class SearchAdapter extends BaseMyAdapter<SearchAdapter.ViewHolder>
         Music data = (Music) getItem(position);
         holder.name.setText(data.getTitle());
         holder.singer.setText(data.getArtist());
-        holder.time.setText(TimeUtils.INSTANCE.millis2MSStr(data.getDuration()));
+        holder.time.setText(TimeUtils.millis2MSStr(data.getDuration()));
         holder.more.setVisibility(View.GONE);
     }
 
