@@ -9,6 +9,8 @@ import com.runing.example.mvpmusicplayer.data.bean.Music;
 import com.runing.example.mvpmusicplayer.data.bean.MusicState;
 import com.runing.example.mvpmusicplayer.service.MusicService;
 
+import java.util.List;
+
 /**
  * Created by runing on 2016/5/16.
  * <p/>
@@ -30,6 +32,8 @@ public interface DetailContract {
 
     interface View extends BaseView<Presenter> {
 
+        void initMusicPager(List<Music> musicList);
+
         /**
          * 还原音乐显示
          *
@@ -43,7 +47,8 @@ public interface DetailContract {
          * @param state 状态
          * @param music 音乐实例
          */
-        void updateMusic(@NonNull MusicService.PlayState state, @Nullable Music music);
+        void updateMusic(@NonNull MusicService.PlayState state,
+                         @Nullable Music music, int position);
 
         /**
          * 通知改变模式
@@ -109,8 +114,8 @@ public interface DetailContract {
         /**
          * 播放指定音乐
          *
-         * @param id 音乐id
+         * @param position 音乐id
          */
-        void playSpecified(int id);
+        void playSpecified(int position);
     }
 }

@@ -144,8 +144,8 @@
 
     </RelativeLayout>
 
-    <ImageView
-        android:id="@+id/iv_image"
+    <android.support.v4.view.ViewPager
+        android:id="@+id/vp_music"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_above="@+id/rl_bottom_bar"
@@ -154,7 +154,6 @@
         android:layout_alignParentRight="true"
         android:layout_alignParentStart="true"
         android:layout_below="@+id/tb_detail"
-        android:scaleType="centerCrop"
-        android:transitionName="@string/music_image_transitionName"
-        tools:src="@mipmap/ic_launcher" />
+        android:transitionName="@string/music_image_transitionName" />
+
 </RelativeLayout>

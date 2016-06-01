@@ -15,18 +15,18 @@ import java.util.List;
 
 /**
  * Created by runing on 2016/5/16.
- * <p>
+ * <p/>
  * This file is part of MvpMusicPlayer.
  * MvpMusicPlayer is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * <p>
+ * <p/>
  * MvpMusicPlayer is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * <p>
+ * <p/>
  * You should have received a copy of the GNU General Public License
  * along with MvpMusicPlayer.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -126,21 +126,25 @@ public class DetailPresenter implements DetailContract.Presenter, MusicService.M
     }
 
     @Override
-    public void playSpecified(int id) {
-
+    public void playSpecified(int position) {
+        int location = mMusicService.playSpecified(position);
+        boolean isNoChange = location == MusicService.INDEX_DEFAULT;
+        mDetailView.updateMusic(MusicService.PlayState.SWITCH, isNoChange ?
+                null : mMusics.get(location), position);
     }
 
     @Override
     public void onInitMusicData(List<Music> musics) {
         this.mMusics = musics;
         MusicState musicState = mMusicService.getCurrentMusicState();
+        mDetailView.initMusicPager(musics);
         mDetailView.restoreMusic(musicState);
     }
 
     @Override
     public void onChangeCurrMusic(MusicService.PlayState state, int position) {
         boolean isNoChange = position == MusicService.INDEX_DEFAULT;
-        mDetailView.updateMusic(state, isNoChange ? null : mMusics.get(position));
+        mDetailView.updateMusic(state, isNoChange ? null : mMusics.get(position), position);
     }
 
     @Override

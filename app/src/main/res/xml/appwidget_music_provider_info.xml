@@ -3,6 +3,7 @@
     android:initialLayout="@layout/appwidget_music_layout"
     android:minHeight="@dimen/appwidget_min_height"
     android:minWidth="@dimen/appwidget_min_width"
+    android:previewImage="@drawable/preview_appwidget"
     android:updatePeriodMillis="86400000">
 
 </appwidget-provider>

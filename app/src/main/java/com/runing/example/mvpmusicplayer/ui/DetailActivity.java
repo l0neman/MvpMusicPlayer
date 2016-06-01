@@ -1,12 +1,16 @@
 package com.runing.example.mvpmusicplayer.ui;
 
 import android.annotation.SuppressLint;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.view.PagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.support.v7.widget.Toolbar;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -21,6 +25,8 @@ import com.runing.example.mvpmusicplayer.presenter.DetailPresenter;
 import com.runing.example.mvpmusicplayer.service.MusicService;
 import com.runing.example.mvpmusicplayer.util.BitmapUtils;
 import com.runing.example.mvpmusicplayer.util.TimeUtils;
+
+import java.util.List;
 
 /**
  * Created by runing on 2016/5/16.
@@ -49,7 +55,7 @@ public class DetailActivity extends BaseActivity implements DetailContract.View
     private boolean mIsAction;
 
     private Toolbar mTitleBar;
-    private ImageView mMusicImage;
+    //    private ImageView mMusicImage;
     private SeekBar mMusicSeekBar;
     private TextView mCurrTime;
     private TextView mTotalTime;
@@ -59,9 +65,14 @@ public class DetailActivity extends BaseActivity implements DetailContract.View
     private ImageView mModeRandom;
     private ImageView mPlay;
     private ImageView mPause;
-    private ImageView mPlayList;
+    //    private ImageView mPlayList;
+    private ViewPager mMusicPager;
+
+    private View[] mMusicPages;
 
     private int mMusicImgLength;
+
+    private int delayPosition = -1;
 
     private Toast mToast;
 
@@ -83,7 +94,11 @@ public class DetailActivity extends BaseActivity implements DetailContract.View
         mTitleBar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                finish();
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    finishAfterTransition();
+                } else {
+                    finish();
+                }
             }
         });
 
@@ -92,14 +107,15 @@ public class DetailActivity extends BaseActivity implements DetailContract.View
 
         mCurrTime = findCaseViewById(R.id.tv_curr_time);
         mTotalTime = findCaseViewById(R.id.tv_total_time);
-        mMusicImage = findCaseViewById(R.id.iv_image);
+//        mMusicImage = findCaseViewById(R.id.iv_image);
         mMusicSeekBar = findCaseViewById(R.id.sb_progress);
         mModeLoop = findCaseViewById(R.id.iv_mode_loop);
         mModeOne = findCaseViewById(R.id.iv_mode_one);
         mModeRandom = findCaseViewById(R.id.iv_mode_random);
         mPlay = findCaseViewById(R.id.iv_play);
         mPause = findCaseViewById(R.id.iv_pause);
-        mPlayList = findCaseViewById(R.id.iv_play_list);
+//        mPlayList = findCaseViewById(R.id.iv_play_list);
+        mMusicPager = findCaseViewById(R.id.vp_music);
 
         mPre.setOnClickListener(this);
         mNext.setOnClickListener(this);
@@ -108,7 +124,41 @@ public class DetailActivity extends BaseActivity implements DetailContract.View
         mModeRandom.setOnClickListener(this);
         mPlay.setOnClickListener(this);
         mPause.setOnClickListener(this);
-        mPlayList.setOnClickListener(this);
+//        mPlayList.setOnClickListener(this);
+    }
+
+    private class MusicPagerAdapter extends PagerAdapter {
+
+        private List<Music> mData;
+
+        public MusicPagerAdapter(List<Music> data) {
+            mData = data;
+        }
+
+        @Override
+        public int getCount() {
+            return mData.size();
+        }
+
+        @Override
+        public boolean isViewFromObject(View view, Object object) {
+            return view == object;
+        }
+
+        @Override
+        public void destroyItem(ViewGroup container, int position, Object object) {
+            container.removeView(mMusicPages[position]);
+        }
+
+        @Override
+        public Object instantiateItem(ViewGroup container, int position) {
+            View page = mMusicPages[position];
+            ((ImageView) page).setImageBitmap(BitmapUtils.decodeSampledBitmapFromFD(
+                    DetailActivity.this, mData.get(position).getAlbum_id(),
+                    mMusicImgLength, mMusicImgLength));
+            container.addView(page);
+            return page;
+        }
     }
 
     @Override
@@ -203,11 +253,58 @@ public class DetailActivity extends BaseActivity implements DetailContract.View
     }
 
     @Override
+    public void initMusicPager(List<Music> musicList) {
+        mMusicPages = new View[musicList.size()];
+        for (int i = 0; i < mMusicPages.length; i++) {
+            ImageView imageView = new ImageView(this);
+            imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            mMusicPages[i] = imageView;
+        }
+        final MusicPagerAdapter pagerAdapter = new MusicPagerAdapter(musicList);
+
+        if (mMusicImgLength != 0) {
+            setMusicPager(pagerAdapter);
+        } else {
+            mMusicPager.post(new Runnable() {
+                @Override
+                public void run() {
+                    mMusicImgLength = mMusicPager.getWidth();
+                    setMusicPager(pagerAdapter);
+                    if (delayPosition != -1) {
+                        mMusicPager.setCurrentItem(delayPosition, false);
+                        delayPosition = -1;
+                    }
+                }
+            });
+        }
+    }
+
+    private void setMusicPager(MusicPagerAdapter pagerAdapter) {
+        mMusicPager.setAdapter(pagerAdapter);
+        mMusicPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset,
+                                       int positionOffsetPixels) {
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                mPresenter.playSpecified(position);
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+            }
+        });
+    }
+
+    @Override
     public void restoreMusic(MusicState state) {
         restoreMusicView(state);
         int total = state.getTotal();
         int progress = state.getProgress();
 
+        mMusicPager.setCurrentItem(state.getPosition(), false);
         mMusicSeekBar.setMax(total);
         mMusicSeekBar.setProgress(progress);
         mTotalTime.setText(TimeUtils.millis2MSStr(total));
@@ -255,11 +352,21 @@ public class DetailActivity extends BaseActivity implements DetailContract.View
         updatePlayMode(state.getMode());
         mMusicSeekBar.setMax(state.getTotal());
         mMusicSeekBar.setProgress(state.getProgress());
-        updateMusic(state.getState(), state.getMusic());
+        updateMusic(state.getState(), state.getMusic(), state.getPosition());
     }
 
     @Override
-    public void updateMusic(@NonNull MusicService.PlayState state, @Nullable Music music) {
+    public void updateMusic(@NonNull MusicService.PlayState state,
+                            @Nullable Music music, int position) {
+        if (music != null) {
+            //已经设置Adapter
+            if (mMusicImgLength != 0) {
+                mMusicPager.setCurrentItem(position, false);
+            } else {
+                //延迟设置ViewPager
+                delayPosition = position;
+            }
+        }
         updateMusicView(music);
         switch (state) {
             case PLAY:
@@ -312,7 +419,7 @@ public class DetailActivity extends BaseActivity implements DetailContract.View
      */
     private void updateMusicView(Music music) {
         if (music != null) {
-            installMusicImage(music.getAlbum_id());
+//            installMusicImage(music.getAlbum_id());
             mTitleBar.setTitle(music.getTitle());
             mTitleBar.setSubtitle(music.getArtist());
         }
@@ -323,27 +430,27 @@ public class DetailActivity extends BaseActivity implements DetailContract.View
      *
      * @param albumId 专辑id
      */
-    private void installMusicImage(final long albumId) {
-        if (mMusicImgLength != 0) {
-            setMusicAlbumImage(albumId);
-        } else {
-            mMusicImage.post(new Runnable() {
-                @Override
-                public void run() {
-                    mMusicImgLength = mMusicImage.getWidth();
-                    setMusicAlbumImage(albumId);
-                }
-            });
-        }
-    }
+//    private void installMusicImage(final long albumId) {
+//        if (mMusicImgLength != 0) {
+//            setMusicAlbumImage(albumId);
+//        } else {
+//            mMusicImage.post(new Runnable() {
+//                @Override
+//                public void run() {
+//                    mMusicImgLength = mMusicImage.getWidth();
+//                    setMusicAlbumImage(albumId);
+//                }
+//            });
+//        }
+//    }
 
     /**
      * 设置专辑图片
      *
      * @param albumId 专辑id
      */
-    private void setMusicAlbumImage(long albumId) {
-        mMusicImage.setImageBitmap(BitmapUtils.decodeSampledBitmapFromFD(this,
-                albumId, mMusicImgLength, mMusicImgLength));
-    }
+//    private void setMusicAlbumImage(long albumId) {
+//        mMusicImage.setImageBitmap(BitmapUtils.decodeSampledBitmapFromFD(this,
+//                albumId, mMusicImgLength, mMusicImgLength));
+//    }
 }

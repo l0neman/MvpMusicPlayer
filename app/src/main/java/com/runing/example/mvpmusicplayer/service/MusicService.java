@@ -541,7 +541,6 @@ public final class MusicService extends Service {
      * @return you know
      */
     public MusicState getCurrentMusicState() {
-//        MusicState musicState = new MusicState();
         //当前音乐
         mMusicState.setMusic(mCurrMusic);
         //当前模式

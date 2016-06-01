@@ -57,10 +57,6 @@ public final class MainPresenter implements MainContract.Presenter,
      */
     private MusicService mMusicService;
     /**
-     * 音乐列表适配器
-     */
-//    private MusicAdapter mMusicAdapter;
-    /**
      * 延迟启动搜索
      */
     private boolean mEnterSearchDelay = false;
@@ -118,9 +114,6 @@ public final class MainPresenter implements MainContract.Presenter,
         boolean isNoChange = location == MusicService.INDEX_DEFAULT;
         mMainView.updateMusic(MusicService.PlayState.SWITCH, isNoChange ?
                 null : mMusics.get(location), position);
-//        if (!isNoChange) {
-//            mMusicAdapter.select(location);
-//        }
     }
 
     @Override
@@ -213,16 +206,7 @@ public final class MainPresenter implements MainContract.Presenter,
             enterSearch();
             mEnterSearchDelay = false;
         }
-//        if (mMusicAdapter == null) {
-//            mMusicAdapter = new MusicAdapter((Context) mMainView, musics);
         mMainView.showMusicList(musics);
-//        }
-//        MusicState musicState = mMusicService.getCurrentMusicState();
-//        int position = musicState.getPosition();
-        //音乐处于活动状态
-//        if (position != MusicService.INDEX_DEFAULT) {
-//            mMusicAdapter.select(position);
-//        }
         mMainView.restoreMusic(mMusicService.getCurrentMusicState());
     }
 
@@ -230,9 +214,6 @@ public final class MainPresenter implements MainContract.Presenter,
     public void onChangeCurrMusic(MusicService.PlayState state, int position) {
         boolean isNoChange = position == MusicService.INDEX_DEFAULT;
         mMainView.updateMusic(state, isNoChange ? null : mMusics.get(position), position);
-//        if (!isNoChange) {
-//            mMusicAdapter.select(position);
-//        }
     }
 
     @Override
