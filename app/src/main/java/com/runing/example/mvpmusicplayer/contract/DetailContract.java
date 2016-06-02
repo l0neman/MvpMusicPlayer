@@ -32,7 +32,7 @@ public interface DetailContract {
 
     interface View extends BaseView<Presenter> {
 
-        void initMusicPager(List<Music> musicList);
+//        void initMusicPager(List<Music> musicList, int position);
 
         /**
          * 还原音乐显示

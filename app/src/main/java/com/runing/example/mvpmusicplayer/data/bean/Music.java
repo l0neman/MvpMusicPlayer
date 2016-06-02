@@ -1,6 +1,7 @@
 package com.runing.example.mvpmusicplayer.data.bean;
 
-import java.io.Closeable;
+import com.runing.example.mvpmusicplayer.util.DataUtils;
+
 import java.io.Serializable;
 
 /**
@@ -20,7 +21,7 @@ import java.io.Serializable;
  * You should have received a copy of the GNU General Public License
  * along with MvpMusicPlayer.  If not, see <http://www.gnu.org/licenses/>.
  */
-public class Music implements Serializable, Cloneable {
+public class Music extends DataUtils.Cloneable implements Serializable {
     private long id;
     private String title;
     private String artist;

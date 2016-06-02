@@ -1,13 +1,11 @@
 package com.runing.example.mvpmusicplayer.presenter;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
-import android.support.annotation.NonNull;
 
-import com.runing.example.mvpmusicplayer.apdater.SearchAdapter;
 import com.runing.example.mvpmusicplayer.contract.SearchContract;
 import com.runing.example.mvpmusicplayer.data.bean.Music;
+import com.runing.example.mvpmusicplayer.util.DataUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,15 +32,15 @@ public class SearchPresenter implements SearchContract.Presenter {
     /**
      * 获取音乐列表
      */
-    public static final String MUSIC_LIST = "music_info";
+    static final String MUSIC_LIST = "music_info";
     /**
      * 获取id的key
      */
-    public static final String ID_KEY = "id_key";
+    static final String ID_KEY = "id_key";
     /**
      * 结果码
      */
-    public static final int RESULT_ID = 0;
+    static final int RESULT_ID = 0;
 
     private SearchContract.View mSearchView;
     /**
@@ -52,10 +50,9 @@ public class SearchPresenter implements SearchContract.Presenter {
     /**
      * 源数据
      */
-    @SuppressWarnings("unchecked")
-    private List<Music> mMusics = Collections.EMPTY_LIST;
+    private List<Music> mMusics = Collections.emptyList();
 
-    public SearchPresenter(SearchContract.View mSearchView) {
+    private SearchPresenter(SearchContract.View mSearchView) {
         this.mSearchView = mSearchView;
         mSearchView.setPresenter(this);
         mCopyMusics = new ArrayList<>();
@@ -69,14 +66,14 @@ public class SearchPresenter implements SearchContract.Presenter {
     @SuppressWarnings("unchecked") //已实现序列化
     public void handData(Intent data) {
         mMusics = (List<Music>) data.getSerializableExtra(MUSIC_LIST);
-        deepCopy(mCopyMusics, mMusics);
+        DataUtils.deepCopy(mCopyMusics, mMusics);
     }
 
     @Override
     public void startSearch(String search) {
         mCopyMusics.clear();
         if (search.equals("")) {
-            deepCopy(mCopyMusics, mMusics);
+            DataUtils.deepCopy(mCopyMusics, mMusics);
         } else {
             for (Music music : mMusics) {
                 String trim = search.trim();
@@ -101,18 +98,5 @@ public class SearchPresenter implements SearchContract.Presenter {
     @Override
     public void start() {
         mSearchView.showSearchList(mCopyMusics);
-    }
-
-    /**
-     * 深拷贝Music集合
-     *
-     * @param aims   目标
-     * @param source 源
-     */
-    private void deepCopy(@NonNull List<Music> aims, @NonNull List<Music> source) {
-        aims.clear();
-        for (Music music : source) {
-            aims.add(music.clone());
-        }
     }
 }

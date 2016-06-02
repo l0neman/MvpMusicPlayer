@@ -1,7 +1,6 @@
 package com.runing.example.mvpmusicplayer.ui;
 
 import android.content.Intent;
-import android.graphics.Canvas;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -12,10 +11,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.BaseAdapter;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -169,12 +165,6 @@ public class MainActivity extends BaseActivity implements MainContract.View,
                 mPresenter.playSpecified(position);
             }
         });
-//        mMusicList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-//            @Override
-//            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//                mPresenter.playSpecified(position);
-//            }
-//        });
     }
 
     /**

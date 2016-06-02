@@ -17,6 +17,7 @@ import com.runing.example.mvpmusicplayer.data.biz.MusicGet;
 import com.runing.example.mvpmusicplayer.presenter.MusicAWPresenter;
 import com.runing.example.mvpmusicplayer.presenter.NotifyPresenter;
 import com.runing.example.mvpmusicplayer.ui.MusicNotification;
+import com.runing.example.mvpmusicplayer.util.DataUtils;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -74,8 +75,7 @@ public final class MusicService extends Service {
     /**
      * 音乐数据
      */
-    @SuppressWarnings("unchecked") //防止为null
-    private List<Music> mMusics = Collections.EMPTY_LIST;
+    private List<Music> mMusics = Collections.emptyList();
     /**
      * 多媒体
      */
@@ -298,12 +298,6 @@ public final class MusicService extends Service {
      */
     public void setMusicAWPresenter(@Nullable MusicAWPresenter mMusicAWPresenter) {
         this.mMusicAWPresenter = mMusicAWPresenter;
-//        if (mMusicAWPresenter != null) {
-//
-//        }
-//        if (mMusics != null && mMusicAWPresenter != null) {
-//            mMusicAWPresenter.onInitMusicData(mMusics);
-//        }
     }
 
     /**
@@ -623,27 +617,12 @@ public final class MusicService extends Service {
      */
     private void initHistoryMusic() {
         readMusicHistory();
-        mIndex = findIndex(mMusics, mMusicId);
+        mIndex = DataUtils.findIndex(mMusics, mMusicId);
         if (mIndex == INDEX_DEFAULT) {
             setDefaultMusic();
         } else {
             mCurrMusic = mMusics.get(mIndex);
         }
-    }
-
-    /**
-     * 查询index
-     */
-    public static int findIndex(List<Music> mMusics, long mMusicId) {
-        int index = 0;
-        for (Music music : mMusics) {
-            if (music.getId() == mMusicId) {
-                return index;
-            } else {
-                index++;
-            }
-        }
-        return INDEX_DEFAULT;
     }
 
     /**

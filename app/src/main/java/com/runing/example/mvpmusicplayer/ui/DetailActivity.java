@@ -11,6 +11,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -25,8 +26,11 @@ import com.runing.example.mvpmusicplayer.presenter.DetailPresenter;
 import com.runing.example.mvpmusicplayer.service.MusicService;
 import com.runing.example.mvpmusicplayer.util.BitmapUtils;
 import com.runing.example.mvpmusicplayer.util.TimeUtils;
+import com.runing.example.mvpmusicplayer.widget.MusicPageScaleInTransformer;
 
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Created by runing on 2016/5/16.
@@ -55,7 +59,6 @@ public class DetailActivity extends BaseActivity implements DetailContract.View
     private boolean mIsAction;
 
     private Toolbar mTitleBar;
-    //    private ImageView mMusicImage;
     private SeekBar mMusicSeekBar;
     private TextView mCurrTime;
     private TextView mTotalTime;
@@ -65,23 +68,44 @@ public class DetailActivity extends BaseActivity implements DetailContract.View
     private ImageView mModeRandom;
     private ImageView mPlay;
     private ImageView mPause;
-    //    private ImageView mPlayList;
-    private ViewPager mMusicPager;
-
-    private View[] mMusicPages;
-
-    private int mMusicImgLength;
-
-    private int delayPosition = -1;
-
+    /**
+     * 专辑背景
+     */
+//    private FrameLayout mMusicBg;
+//    private ViewPager mMusicPager;
+    /**
+     * 专辑图片尺寸
+     */
+//    private int mMusicImgLength;
+    /**
+     * 延迟设置音乐
+     */
+//    private int delayPosition = -1;
+//    private Music delayMusic;
+    /**
+     * 提示
+     */
     private Toast mToast;
-
+    /**
+     * 进度更新标志
+     */
     private boolean mIsUpdateProgress = true;
+    /**
+     * 是否程序控制翻页
+     */
+//    private boolean mIsAutoSelectPage;
+
+//    private ExecutorService mImageSetExecutor;
 
     @Override
     protected int onContentViewId() {
         return R.layout.activity_detail;
     }
+
+//    @Override
+//    protected void onBeforeCreateView(Bundle savedInstanceState) {
+//        mImageSetExecutor = Executors.newSingleThreadExecutor();
+//    }
 
     @SuppressLint("ShowToast")
     @Override
@@ -107,15 +131,14 @@ public class DetailActivity extends BaseActivity implements DetailContract.View
 
         mCurrTime = findCaseViewById(R.id.tv_curr_time);
         mTotalTime = findCaseViewById(R.id.tv_total_time);
-//        mMusicImage = findCaseViewById(R.id.iv_image);
         mMusicSeekBar = findCaseViewById(R.id.sb_progress);
         mModeLoop = findCaseViewById(R.id.iv_mode_loop);
         mModeOne = findCaseViewById(R.id.iv_mode_one);
         mModeRandom = findCaseViewById(R.id.iv_mode_random);
         mPlay = findCaseViewById(R.id.iv_play);
         mPause = findCaseViewById(R.id.iv_pause);
-//        mPlayList = findCaseViewById(R.id.iv_play_list);
-        mMusicPager = findCaseViewById(R.id.vp_music);
+//        mMusicBg = findCaseViewById(R.id.fl_image_back);
+//        mMusicPager = findCaseViewById(R.id.vp_music);
 
         mPre.setOnClickListener(this);
         mNext.setOnClickListener(this);
@@ -124,41 +147,6 @@ public class DetailActivity extends BaseActivity implements DetailContract.View
         mModeRandom.setOnClickListener(this);
         mPlay.setOnClickListener(this);
         mPause.setOnClickListener(this);
-//        mPlayList.setOnClickListener(this);
-    }
-
-    private class MusicPagerAdapter extends PagerAdapter {
-
-        private List<Music> mData;
-
-        public MusicPagerAdapter(List<Music> data) {
-            mData = data;
-        }
-
-        @Override
-        public int getCount() {
-            return mData.size();
-        }
-
-        @Override
-        public boolean isViewFromObject(View view, Object object) {
-            return view == object;
-        }
-
-        @Override
-        public void destroyItem(ViewGroup container, int position, Object object) {
-            container.removeView(mMusicPages[position]);
-        }
-
-        @Override
-        public Object instantiateItem(ViewGroup container, int position) {
-            View page = mMusicPages[position];
-            ((ImageView) page).setImageBitmap(BitmapUtils.decodeSampledBitmapFromFD(
-                    DetailActivity.this, mData.get(position).getAlbum_id(),
-                    mMusicImgLength, mMusicImgLength));
-            container.addView(page);
-            return page;
-        }
     }
 
     @Override
@@ -170,6 +158,7 @@ public class DetailActivity extends BaseActivity implements DetailContract.View
     @Override
     protected void onPause() {
         super.onPause();
+//        mImageSetExecutor.shutdown();
         mPresenter.recycleUi();
     }
 
@@ -252,51 +241,137 @@ public class DetailActivity extends BaseActivity implements DetailContract.View
         this.mPresenter = presenter;
     }
 
-    @Override
-    public void initMusicPager(List<Music> musicList) {
-        mMusicPages = new View[musicList.size()];
-        for (int i = 0; i < mMusicPages.length; i++) {
-            ImageView imageView = new ImageView(this);
-            imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-            mMusicPages[i] = imageView;
-        }
-        final MusicPagerAdapter pagerAdapter = new MusicPagerAdapter(musicList);
+    /**
+     * ViewPager适配器
+     */
+//    private class MusicPagerAdapter extends PagerAdapter {
+//
+//        private List<Music> mData;
+//
+//        MusicPagerAdapter(List<Music> data) {
+//            mData = data;
+//        }
+//
+//        @Override
+//        public int getCount() {
+//            return mData.size();
+//        }
+//
+//        @Override
+//        public boolean isViewFromObject(View view, Object object) {
+//            return view == object;
+//        }
+//
+//        @Override
+//        public void destroyItem(ViewGroup container, int position, Object object) {
+//            container.removeView((View) object);
+//        }
+//
+//        @Override
+//        public Object instantiateItem(ViewGroup container, int position) {
+//            ImageView page = generatePageImageView();
+//            page.setImageBitmap(BitmapUtils.decodeSampledBitmapFromFD(
+//                    DetailActivity.this, mData.get(position).getAlbum_id(),
+//                    mMusicImgLength, mMusicImgLength));
+//            container.addView(page);
+//            return page;
+//        }
+//
+//        private ImageView generatePageImageView() {
+//            ImageView imageView = new ImageView(DetailActivity.this);
+//            imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+//            return imageView;
+//        }
+//
+//        @Override
+//        public void finishUpdate(ViewGroup container) {
+//            super.finishUpdate(container);
+//        }
+//    }
 
-        if (mMusicImgLength != 0) {
-            setMusicPager(pagerAdapter);
-        } else {
-            mMusicPager.post(new Runnable() {
-                @Override
-                public void run() {
-                    mMusicImgLength = mMusicPager.getWidth();
-                    setMusicPager(pagerAdapter);
-                    if (delayPosition != -1) {
-                        mMusicPager.setCurrentItem(delayPosition, false);
-                        delayPosition = -1;
-                    }
-                }
-            });
-        }
-    }
+//    @Override
+//    public void initMusicPager(List<Music> musicList, final int position) {
+//        final MusicPagerAdapter pagerAdapter = new MusicPagerAdapter(musicList);
+//        if (mMusicImgLength != 0) {
+//            setMusicPager(pagerAdapter, position);
+//            showCurrentMusic(musicList.get(position), position);
+//        } else {
+//            //获取尺寸后设置
+//            mMusicPager.post(new Runnable() {
+//                @Override
+//                public void run() {
+//                    mMusicImgLength = mMusicPager.getWidth();
+//                    setMusicPager(pagerAdapter, position);
+//                    if (delayPosition != -1) {
+//                        showCurrentMusic(delayMusic, delayPosition);
+//                        delayPosition = -1;
+//                    }
+//                }
+//            });
+//        }
+//    }
 
-    private void setMusicPager(MusicPagerAdapter pagerAdapter) {
-        mMusicPager.setAdapter(pagerAdapter);
-        mMusicPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-            @Override
-            public void onPageScrolled(int position, float positionOffset,
-                                       int positionOffsetPixels) {
-            }
+//    /**
+//     * 设置ViewPager
+//     *
+//     * @param pagerAdapter adapter
+//     */
+//    private void setMusicPager(MusicPagerAdapter pagerAdapter, int position) {
+//        mMusicPager.setAdapter(pagerAdapter);
+//        mMusicPager.setOffscreenPageLimit(3);
+//        mMusicPager.setPageTransformer(false, new MusicPageScaleInTransformer());
+//        mMusicPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+//            @Override
+//            public void onPageScrolled(int position, float positionOffset,
+//                                       int positionOffsetPixels) {
+//            }
+//
+//            @Override
+//            public void onPageSelected(int position) {
+//                   if(!mIsAutoSelectPage) {
+//                       mPresenter.playSpecified(position);
+//                   }else{
+//                       mIsAutoSelectPage = false;
+//                   }
+//            }
+//
+//            @Override
+//            public void onPageScrollStateChanged(int state) {
+//            }
+//        });
+//    }
 
-            @Override
-            public void onPageSelected(int position) {
-                mPresenter.playSpecified(position);
-            }
-
-            @Override
-            public void onPageScrollStateChanged(int state) {
-            }
-        });
-    }
+//    /**
+//     * 展示当前音乐
+//     *
+//     * @param music    音乐
+//     * @param position 位置
+//     */
+    @SuppressWarnings("NewApi") //已经进行版本判断
+//    private void showCurrentMusic(final Music music, final int position) {
+//        if (music != null) {
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+//                mImageSetExecutor.execute(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        final Bitmap bitmap = BitmapUtils.decodeSampledBitmapFromFD(
+//                                DetailActivity.this, music.getAlbum_id(),
+//                                mMusicImgLength, mMusicImgLength);
+//                        final Drawable result = new BitmapDrawable(getResources(),
+//                                BitmapUtils.blurBitmap(DetailActivity.this, bitmap));
+//                        runOnUiThread(new Runnable() {
+//                            @Override
+//                            public void run() {
+//                                mMusicBg.setBackground(result);
+//                            }
+//                        });
+//                    }
+//                });
+//            }
+//        }
+//        mIsAutoSelectPage = true;
+//        mMusicPager.setCurrentItem(position, false);
+//    }
 
     @Override
     public void restoreMusic(MusicState state) {
@@ -304,7 +379,6 @@ public class DetailActivity extends BaseActivity implements DetailContract.View
         int total = state.getTotal();
         int progress = state.getProgress();
 
-        mMusicPager.setCurrentItem(state.getPosition(), false);
         mMusicSeekBar.setMax(total);
         mMusicSeekBar.setProgress(progress);
         mTotalTime.setText(TimeUtils.millis2MSStr(total));
@@ -358,15 +432,7 @@ public class DetailActivity extends BaseActivity implements DetailContract.View
     @Override
     public void updateMusic(@NonNull MusicService.PlayState state,
                             @Nullable Music music, int position) {
-        if (music != null) {
-            //已经设置Adapter
-            if (mMusicImgLength != 0) {
-                mMusicPager.setCurrentItem(position, false);
-            } else {
-                //延迟设置ViewPager
-                delayPosition = position;
-            }
-        }
+//        updateViewPager(music, position);
         updateMusicView(music);
         switch (state) {
             case PLAY:
@@ -388,6 +454,19 @@ public class DetailActivity extends BaseActivity implements DetailContract.View
                 break;
         }
     }
+
+//    private void updateViewPager(Music music, int position) {
+//        if (music != null) {
+//            //已经设置Adapter
+//            if (mMusicImgLength != 0) {
+//                showCurrentMusic(music, position);
+//            } else {
+//                //延迟设置ViewPager
+//                delayMusic = music;
+//                delayPosition = position;
+//            }
+//        }
+//    }
 
     @Override
     public void updatePlayMode(@NonNull MusicService.PlayMode mode) {
@@ -419,38 +498,9 @@ public class DetailActivity extends BaseActivity implements DetailContract.View
      */
     private void updateMusicView(Music music) {
         if (music != null) {
-//            installMusicImage(music.getAlbum_id());
             mTitleBar.setTitle(music.getTitle());
             mTitleBar.setSubtitle(music.getArtist());
         }
     }
 
-    /**
-     * 插图专辑图片
-     *
-     * @param albumId 专辑id
-     */
-//    private void installMusicImage(final long albumId) {
-//        if (mMusicImgLength != 0) {
-//            setMusicAlbumImage(albumId);
-//        } else {
-//            mMusicImage.post(new Runnable() {
-//                @Override
-//                public void run() {
-//                    mMusicImgLength = mMusicImage.getWidth();
-//                    setMusicAlbumImage(albumId);
-//                }
-//            });
-//        }
-//    }
-
-    /**
-     * 设置专辑图片
-     *
-     * @param albumId 专辑id
-     */
-//    private void setMusicAlbumImage(long albumId) {
-//        mMusicImage.setImageBitmap(BitmapUtils.decodeSampledBitmapFromFD(this,
-//                albumId, mMusicImgLength, mMusicImgLength));
-//    }
 }

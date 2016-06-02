@@ -17,6 +17,7 @@ import com.runing.example.mvpmusicplayer.data.bean.MusicState;
 import com.runing.example.mvpmusicplayer.service.MusicService;
 import com.runing.example.mvpmusicplayer.ui.DetailActivity;
 import com.runing.example.mvpmusicplayer.ui.SearchActivity;
+import com.runing.example.mvpmusicplayer.util.DataUtils;
 
 import java.io.Serializable;
 import java.util.List;
@@ -168,7 +169,7 @@ public final class MainPresenter implements MainContract.Presenter,
                 case SEARCH_REQUEST_CODE:
                     if (resultCode == SearchPresenter.RESULT_ID) {
                         long position = data.getLongExtra(SearchPresenter.ID_KEY, -1);
-                        playSpecified(MusicService.findIndex(mMusics, position));
+                        playSpecified(DataUtils.findIndex(mMusics, position));
                     }
                     break;
             }

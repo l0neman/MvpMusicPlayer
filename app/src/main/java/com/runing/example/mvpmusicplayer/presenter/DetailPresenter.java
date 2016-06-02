@@ -10,7 +10,10 @@ import com.runing.example.mvpmusicplayer.contract.DetailContract;
 import com.runing.example.mvpmusicplayer.data.bean.Music;
 import com.runing.example.mvpmusicplayer.data.bean.MusicState;
 import com.runing.example.mvpmusicplayer.service.MusicService;
+import com.runing.example.mvpmusicplayer.util.DataUtils;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -37,10 +40,16 @@ public class DetailPresenter implements DetailContract.Presenter, MusicService.M
      * 音乐列表
      */
     private List<Music> mMusics;
+
+//    private List<Music> mRandomMusics = new ArrayList<>();
     /**
      * 服务
      */
     private MusicService mMusicService;
+    /**
+     * 上一次的模式
+     */
+//    private MusicService.PlayMode mLastMode;
     /**
      * 服务连接
      */
@@ -137,9 +146,15 @@ public class DetailPresenter implements DetailContract.Presenter, MusicService.M
     public void onInitMusicData(List<Music> musics) {
         this.mMusics = musics;
         MusicState musicState = mMusicService.getCurrentMusicState();
-        mDetailView.initMusicPager(musics);
+//        mLastMode = musicState.getMode();
+//        mDetailView.initMusicPager(musics, -1);
         mDetailView.restoreMusic(musicState);
     }
+
+//    private void initRandomMusics() {
+//        DataUtils.deepCopy(mRandomMusics, mMusics);
+//        Collections.shuffle(mRandomMusics);
+//    }
 
     @Override
     public void onChangeCurrMusic(MusicService.PlayState state, int position) {
@@ -150,5 +165,16 @@ public class DetailPresenter implements DetailContract.Presenter, MusicService.M
     @Override
     public void onChangeMusicMode(MusicService.PlayMode mode) {
         mDetailView.updatePlayMode(mode);
+//        if (mode == MusicService.PlayMode.RANDOM) {
+//            initRandomMusics();
+//            //查询当前歌曲在随机列表里的位置
+//            int position = DataUtils.findIndex(mRandomMusics,
+//                    mMusicService.getCurrentMusicState().getMusic().getId());
+//            mDetailView.initMusicPager(mRandomMusics, position);
+//        } else if (mLastMode == MusicService.PlayMode.RANDOM) {
+//            int position = DataUtils.findIndex(mMusics,
+//                    mMusicService.getCurrentMusicState().getMusic().getId());
+//            mDetailView.initMusicPager(mMusics, position);
+//        }
     }
 }
