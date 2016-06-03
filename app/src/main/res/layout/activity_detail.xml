@@ -150,12 +150,13 @@
         android:layout_height="match_parent"
         android:layout_above="@+id/rl_bottom_bar"
         android:layout_below="@+id/tb_detail"
-        android:layout_centerInParent="true">
+        android:layout_centerInParent="true"
+        android:background="@color/colorAccent">
 
         <android.support.v4.view.ViewPager
             android:id="@+id/vp_music"
             android:layout_width="match_parent"
-            android:layout_height="330dp"
+            android:layout_height="match_parent"
             android:layout_gravity="center"
             android:transitionName="@string/music_image_transitionName" />
     </FrameLayout>

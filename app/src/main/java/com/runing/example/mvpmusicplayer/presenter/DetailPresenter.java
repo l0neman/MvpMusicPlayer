@@ -12,9 +12,12 @@ import com.runing.example.mvpmusicplayer.data.bean.MusicState;
 import com.runing.example.mvpmusicplayer.service.MusicService;
 import com.runing.example.mvpmusicplayer.util.DataUtils;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import static com.runing.example.mvpmusicplayer.service.MusicService.PlayMode.LOOP;
+import static com.runing.example.mvpmusicplayer.service.MusicService.PlayMode.RANDOM;
+
 
 /**
  * Created by runing on 2016/5/16.
@@ -41,7 +44,7 @@ public class DetailPresenter implements DetailContract.Presenter, MusicService.M
      */
     private List<Music> mMusics;
 
-//    private List<Music> mRandomMusics = new ArrayList<>();
+    private List<Music> mRandomMusics = Collections.emptyList();
     /**
      * 服务
      */
@@ -49,7 +52,7 @@ public class DetailPresenter implements DetailContract.Presenter, MusicService.M
     /**
      * 上一次的模式
      */
-//    private MusicService.PlayMode mLastMode;
+    private MusicService.PlayMode mCurrentMode;
     /**
      * 服务连接
      */
@@ -146,35 +149,53 @@ public class DetailPresenter implements DetailContract.Presenter, MusicService.M
     public void onInitMusicData(List<Music> musics) {
         this.mMusics = musics;
         MusicState musicState = mMusicService.getCurrentMusicState();
-//        mLastMode = musicState.getMode();
-//        mDetailView.initMusicPager(musics, -1);
+        mCurrentMode = musicState.getMode();
+
+        if(mCurrentMode == RANDOM){
+            initMusicPager(mMusicService.getRandomList());
+        }else{
+            initMusicPager(musics);
+        }
         mDetailView.restoreMusic(musicState);
     }
-
-//    private void initRandomMusics() {
-//        DataUtils.deepCopy(mRandomMusics, mMusics);
-//        Collections.shuffle(mRandomMusics);
-//    }
 
     @Override
     public void onChangeCurrMusic(MusicService.PlayState state, int position) {
         boolean isNoChange = position == MusicService.INDEX_DEFAULT;
-        mDetailView.updateMusic(state, isNoChange ? null : mMusics.get(position), position);
+        if (!isNoChange) {
+            if (mCurrentMode == RANDOM) {
+                Music music = mMusics.get(position);
+                mDetailView.updateMusic(state, music,
+                        DataUtils.findIndex(mRandomMusics, music.getId()));
+            } else {
+                mDetailView.updateMusic(state, mMusics.get(position), position);
+            }
+        } else {
+            mDetailView.updateMusic(state, null, position);
+        }
     }
 
     @Override
-    public void onChangeMusicMode(MusicService.PlayMode mode) {
+    public void onChangeMusicMode(MusicService.PlayMode mode, List<Music> musics) {
         mDetailView.updatePlayMode(mode);
-//        if (mode == MusicService.PlayMode.RANDOM) {
-//            initRandomMusics();
-//            //查询当前歌曲在随机列表里的位置
-//            int position = DataUtils.findIndex(mRandomMusics,
-//                    mMusicService.getCurrentMusicState().getMusic().getId());
-//            mDetailView.initMusicPager(mRandomMusics, position);
-//        } else if (mLastMode == MusicService.PlayMode.RANDOM) {
-//            int position = DataUtils.findIndex(mMusics,
-//                    mMusicService.getCurrentMusicState().getMusic().getId());
-//            mDetailView.initMusicPager(mMusics, position);
-//        }
+        mCurrentMode = mode;
+        initMusicPager(musics);
+    }
+
+    private void initMusicPager(List<Music> musics){
+        Music currMusic = mMusicService.getCurrentMusicState().getMusic();
+        //切换为随机模式
+        if (mCurrentMode == RANDOM) {
+            mRandomMusics = musics;
+            //查询当前歌曲在随机列表里的位置
+            mDetailView.initMusicPager(musics,
+                    DataUtils.findIndex(mRandomMusics, currMusic.getId()));
+        }
+        //从随机模式还原
+        else if (mCurrentMode == LOOP) {
+            //查询当前歌曲在初始列表里的位置
+            mDetailView.initMusicPager(musics,
+                    DataUtils.findIndex(mMusics, currMusic.getId()));
+        }
     }
 }

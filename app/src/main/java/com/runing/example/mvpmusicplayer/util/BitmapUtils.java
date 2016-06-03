@@ -143,7 +143,7 @@ public class BitmapUtils {
     }
 
     /**
-     * 高斯模糊图片
+     * 模糊图片
      *
      * @param context 上下文
      * @param bitmap  位图

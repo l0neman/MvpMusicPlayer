@@ -43,16 +43,17 @@ public class MusicGet {
     /**
      * 音乐数据
      */
-    List<Music> musics = new ArrayList<>();
+    private List<Music> musics = new ArrayList<>();
 
     /**
      * 线程池
      */
-    ExecutorService threadPool = Executors.newSingleThreadExecutor();
+    private ExecutorService threadPool = Executors.newSingleThreadExecutor();
 
     private Handler mHandler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
+            System.out.println(Thread.currentThread().getName());
             //关闭线程池
             threadPool.shutdown();
             mScanCallBack.onOverScanned(musics);

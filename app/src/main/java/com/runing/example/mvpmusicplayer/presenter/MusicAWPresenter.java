@@ -82,7 +82,7 @@ public class MusicAWPresenter implements MusicAWContract.Presenter, MusicService
 
     @Override
     public void requestRestore() {
-        if(isInitService()){
+        if (isInitService()) {
             init();
         }
     }
@@ -191,7 +191,7 @@ public class MusicAWPresenter implements MusicAWContract.Presenter, MusicService
     }
 
     @Override
-    public void onChangeMusicMode(MusicService.PlayMode mode) {
+    public void onChangeMusicMode(MusicService.PlayMode mode, List<Music> randomMusics) {
         mAWView.updatePlayMode(mode);
     }
 }

@@ -132,7 +132,7 @@ public class NotifyPresenter implements NotifyContract.Presenter, MusicService.M
     }
 
     @Override
-    public void onChangeMusicMode(MusicService.PlayMode mode) {
+    public void onChangeMusicMode(MusicService.PlayMode mode,List<Music> randomMusics) {
         // null
     }
 

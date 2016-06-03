@@ -111,7 +111,7 @@ public final class MainPresenter implements MainContract.Presenter,
 
     @Override
     public void playSpecified(int position) {
-        int location = mMusicService.playSpecified(position);
+        int location = mMusicService.playLoopSpecified(position);
         boolean isNoChange = location == MusicService.INDEX_DEFAULT;
         mMainView.updateMusic(MusicService.PlayState.SWITCH, isNoChange ?
                 null : mMusics.get(location), position);
@@ -218,7 +218,7 @@ public final class MainPresenter implements MainContract.Presenter,
     }
 
     @Override
-    public void onChangeMusicMode(MusicService.PlayMode mode) {
+    public void onChangeMusicMode(MusicService.PlayMode mode, List<Music> randomMusics) {
         //null
     }
 
