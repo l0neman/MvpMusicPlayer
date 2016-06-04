@@ -153,7 +153,8 @@ public class BitmapUtils {
     public static Bitmap blurBitmap(Context context, Bitmap bitmap) {
 
         //Let's create an empty bitmap with the same size of the bitmap we want to blur
-        Bitmap outBitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
+        Bitmap outBitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(),
+                Bitmap.Config.ARGB_8888);
 
         //Instantiate a new Renderscript
         RenderScript rs = RenderScript.create(context);

@@ -1,9 +1,6 @@
 package com.runing.example.mvpmusicplayer.ui;
 
 import android.annotation.SuppressLint;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -32,8 +29,6 @@ import com.runing.example.mvpmusicplayer.util.TimeUtils;
 import com.runing.example.mvpmusicplayer.widget.MusicPageScaleInTransformer;
 
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * Created by runing on 2016/5/16.
@@ -88,8 +83,6 @@ public class DetailActivity extends BaseActivity implements DetailContract.View
      * 进度更新标志
      */
     private boolean mIsUpdateProgress = true;
-
-//    private ExecutorService mImageSetExecutor;
 
     @Override
     protected int onContentViewId() {
@@ -147,7 +140,6 @@ public class DetailActivity extends BaseActivity implements DetailContract.View
     @Override
     protected void onPause() {
         super.onPause();
-//        mImageSetExecutor.shutdown();
         mPresenter.recycleUi();
     }
 

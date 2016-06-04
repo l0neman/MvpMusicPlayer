@@ -10,6 +10,7 @@ import android.os.IBinder;
 import android.view.View;
 import android.widget.TextView;
 
+import com.runing.example.mvpmusicplayer.MMPApplication;
 import com.runing.example.mvpmusicplayer.apdater.MusicAdapter;
 import com.runing.example.mvpmusicplayer.contract.MainContract;
 import com.runing.example.mvpmusicplayer.data.bean.Music;
@@ -119,10 +120,11 @@ public final class MainPresenter implements MainContract.Presenter,
 
     @Override
     public void exitApp() {
-        ((Activity) mMainView).finish();
         if (mMusicService != null) {
             mMusicService.stopSelf();
         }
+//        ((Activity) mMainView).finish();
+        MMPApplication.getInstance().exitAllActivity();
     }
 
     @Override
