@@ -381,8 +381,7 @@ public class DetailActivity extends BaseActivity implements DetailContract.View
     @Override
     public void updateMusic(@NonNull MusicService.PlayState state,
                             @Nullable Music music, int position) {
-        showCurrentMusic(position);
-        updateMusicView(music);
+        updateMusicView(music, position);
         switch (state) {
             case PLAY:
                 mPlay.setVisibility(View.GONE);
@@ -432,8 +431,9 @@ public class DetailActivity extends BaseActivity implements DetailContract.View
      *
      * @param music bean实例
      */
-    private void updateMusicView(Music music) {
+    private void updateMusicView(Music music, int position) {
         if (music != null) {
+            showCurrentMusic(position);
             mTitleBar.setTitle(music.getTitle());
             mTitleBar.setSubtitle(music.getArtist());
         }

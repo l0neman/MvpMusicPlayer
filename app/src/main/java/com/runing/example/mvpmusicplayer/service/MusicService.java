@@ -385,17 +385,15 @@ public final class MusicService extends Service {
      */
     private void notifyPlayMode(PlayMode mode) {
         if (!mMusicCallBack.isEmpty()) {
-            List<Music> result = null;
+            List<Music> result;
             switch (mode) {
-                //切换为随机模式
+                //随机模式
                 case RANDOM:
                     result = mRandomMusics;
                     break;
-                //从随机模式还原
-                case LOOP:
-                    result = mMusics;
-                    break;
+                //正常模式
                 default:
+                    result = mMusics;
                     break;
             }
             for (MusicCallBack callBack : mMusicCallBack) {
@@ -510,8 +508,8 @@ public final class MusicService extends Service {
         if (mMediaPlayer.isPlaying()) {
             mMediaPlayer.pause();
             mIsPause = true;
+            notifyPlayState(PlayState.PAUSE, INDEX_DEFAULT);
         }
-        notifyPlayState(PlayState.PAUSE, INDEX_DEFAULT);
     }
 
 
@@ -528,112 +526,6 @@ public final class MusicService extends Service {
         return play();
     }
 
-
-    /**
-     * 上一首
-     *
-     * @return index
-     */
-    public int preMusic() {
-        if (mIndex == 0) {
-            mIndex = mMusics.size() - 1;
-        } else {
-            mIndex--;
-        }
-        updateCurrMusic();
-        mIsPause = false;
-        return play();
-    }
-
-    /**
-     * 停止音乐
-     */
-    public void stopMusic() {
-        mIsPause = false;
-        if (isActive()) {
-            mMediaPlayer.stop();
-        }
-        mCurrentProgress = 0;
-        notifyPlayState(PlayState.STOP, INDEX_DEFAULT);
-    }
-
-
-    /**
-     * 播放指定音乐
-     *
-     * @param position 列表位置
-     */
-    public int playSpecified(int position) {
-        if (mCurrentPlayMode == PlayMode.RANDOM) {
-            return playRandomSpecified(position);
-        } else {
-            return playLoopSpecified(position);
-        }
-        //和原音乐位置不同
-//        if (getCurrentPosition() != position) {
-////            mIndex = position;
-//            setCurrentPosition(position);
-//            mIsPause = false;
-//            updateCurrMusic();
-//            return play();
-//        }//相同但处于暂停
-//        else if (mIsPause) {
-//            return play();
-//        }
-//        return INDEX_DEFAULT;
-    }
-
-    /**
-     * 指定位置播放原始列表音乐
-     * 可以在随机模式启用状态下使用
-     *
-     * @param position 原始列表位置
-     * @return position
-     */
-    public int playLoopSpecified(int position) {
-        if (getCurrentPosition() != position) {
-//            mIndex = position;
-            setCurrentPosition(position);
-            mIsPause = false;
-            updateCurrMusic();
-            return play();
-        }//相同但处于暂停
-        else if (mIsPause) {
-            return play();
-        }
-        return INDEX_DEFAULT;
-    }
-
-    /**
-     * 指定位置播放随机列表音乐
-     * 只能在随机模式启用状态下使用
-     *
-     * @param position 随机列表位置
-     * @return position
-     */
-    private int playRandomSpecified(int position) {
-        if (mIndex != position) {
-            mIndex = position;
-            mIsPause = false;
-            updateCurrMusic();
-            return play();
-        } else if (mIsPause) {
-            return play();
-        }
-        return INDEX_DEFAULT;
-    }
-
-    /**
-     * 更新当前音乐
-     */
-    private void updateCurrMusic() {
-        if (mCurrentPlayMode == PlayMode.RANDOM) {
-            mCurrMusic = mRandomMusics.get(mIndex);
-        } else {
-            mCurrMusic = mMusics.get(mIndex);
-        }
-        mMusicId = mCurrMusic.getId();
-    }
 
     /**
      * 模式检查
@@ -654,6 +546,94 @@ public final class MusicService extends Service {
                 break;
             }
         }
+    }
+
+    /**
+     * 上一首
+     *
+     * @return index
+     */
+    public int preMusic() {
+        if (mIndex == 0) {
+            mIndex = mMusics.size() - 1;
+        } else {
+            mIndex--;
+        }
+        updateCurrMusic();
+        mIsPause = false;
+        return play();
+    }
+
+
+    /**
+     * 停止音乐
+     */
+    public void stopMusic() {
+        mIsPause = false;
+        if (isActive()) {
+            mMediaPlayer.stop();
+        }
+        mCurrentProgress = 0;
+        notifyPlayState(PlayState.STOP, INDEX_DEFAULT);
+    }
+
+    /**
+     * 播放指定音乐
+     *
+     * @param position 列表位置
+     */
+    public int playSpecified(int position) {
+        if (mCurrentPlayMode == PlayMode.RANDOM) {
+            return playRandomSpecified(position);
+        } else {
+            return playLoopSpecified(position);
+        }
+    }
+
+    /**
+     * 指定位置播放原始列表音乐
+     * 可以在随机模式启用状态下使用
+     *
+     * @param position 原始列表位置
+     * @return position
+     */
+    public int playLoopSpecified(int position) {
+        if (getCurrentPosition() != position) {
+            setCurrentPosition(position);
+            mIsPause = false;
+            updateCurrMusic();
+            return play();
+        }
+        return INDEX_DEFAULT;
+    }
+
+    /**
+     * 指定位置播放随机列表音乐
+     * 只能在随机模式启用状态下使用
+     *
+     * @param position 随机列表位置
+     * @return position
+     */
+    private int playRandomSpecified(int position) {
+        if (mIndex != position) {
+            mIndex = position;
+            mIsPause = false;
+            updateCurrMusic();
+            return play();
+        }
+        return INDEX_DEFAULT;
+    }
+
+    /**
+     * 更新当前音乐
+     */
+    private void updateCurrMusic() {
+        if (mCurrentPlayMode == PlayMode.RANDOM) {
+            mCurrMusic = mRandomMusics.get(mIndex);
+        } else {
+            mCurrMusic = mMusics.get(mIndex);
+        }
+        mMusicId = mCurrMusic.getId();
     }
 
     /**
@@ -762,7 +742,6 @@ public final class MusicService extends Service {
         } else {
             mCurrMusic = mMusics.get(mIndex);
         }
-//        setPlayMode(mCurrentPlayMode);
         switchModeData();
     }
 

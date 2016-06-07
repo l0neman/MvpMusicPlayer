@@ -26,9 +26,13 @@
 
         <activity android:name=".ui.DetailActivity" />
 
-        <service android:name=".service.MusicService" />
+        <service
+            android:name=".service.MusicService"
+            android:exported="false" />
 
-        <receiver android:name=".ui.MusicAppWidgetProvider">
+        <receiver
+            android:name=".ui.MusicAppWidgetProvider"
+            android:exported="false">
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/appwidget_music_provider_info" />

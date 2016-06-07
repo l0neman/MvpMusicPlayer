@@ -15,7 +15,6 @@ import com.runing.example.mvpmusicplayer.util.DataUtils;
 import java.util.Collections;
 import java.util.List;
 
-import static com.runing.example.mvpmusicplayer.service.MusicService.PlayMode.LOOP;
 import static com.runing.example.mvpmusicplayer.service.MusicService.PlayMode.RANDOM;
 
 
@@ -139,10 +138,7 @@ public class DetailPresenter implements DetailContract.Presenter, MusicService.M
 
     @Override
     public void playSpecified(int position) {
-        int location = mMusicService.playSpecified(position);
-        boolean isNoChange = location == MusicService.INDEX_DEFAULT;
-        mDetailView.updateMusic(MusicService.PlayState.SWITCH, isNoChange ?
-                null : mMusics.get(location), position);
+        mMusicService.playSpecified(position);
     }
 
     @Override
@@ -151,9 +147,9 @@ public class DetailPresenter implements DetailContract.Presenter, MusicService.M
         MusicState musicState = mMusicService.getCurrentMusicState();
         mCurrentMode = musicState.getMode();
 
-        if(mCurrentMode == RANDOM){
+        if (mCurrentMode == RANDOM) {
             initMusicPager(mMusicService.getRandomList());
-        }else{
+        } else {
             initMusicPager(musics);
         }
         mDetailView.restoreMusic(musicState);
@@ -182,7 +178,7 @@ public class DetailPresenter implements DetailContract.Presenter, MusicService.M
         initMusicPager(musics);
     }
 
-    private void initMusicPager(List<Music> musics){
+    private void initMusicPager(List<Music> musics) {
         Music currMusic = mMusicService.getCurrentMusicState().getMusic();
         //切换为随机模式
         if (mCurrentMode == RANDOM) {
@@ -192,7 +188,7 @@ public class DetailPresenter implements DetailContract.Presenter, MusicService.M
                     DataUtils.findIndex(mRandomMusics, currMusic.getId()));
         }
         //从随机模式还原
-        else if (mCurrentMode == LOOP) {
+        else {
             //查询当前歌曲在初始列表里的位置
             mDetailView.initMusicPager(musics,
                     DataUtils.findIndex(mMusics, currMusic.getId()));

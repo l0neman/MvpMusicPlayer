@@ -58,7 +58,7 @@ public class MusicNotification implements NotifyContract.View {
     /**
      * 通知管理
      */
-    NotificationManager mNotificationManager;
+    private NotificationManager mNotificationManager;
 
     /**
      * 广播接收器
