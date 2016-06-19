@@ -9,6 +9,7 @@
     <string name="mode_play_one">单曲循环</string>
     <string name="mode_play_random">随机播放</string>
     <string name="failed_play_music">音乐播放失败！</string>
+    <string name="alert_not_found_music">未搜索到本地音乐！</string>
 
     <string name="music_image_transitionName">MusicImage</string>
 </resources>
